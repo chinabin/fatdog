@@ -1,0 +1,7 @@
+[
+{
+  "directory": "/home/ubuntu/fatdog/build",
+  "command": "/usr/bin/g++-7    -g   -o CMakeFiles/fatdog.dir/fatdog.cpp.o -c /home/ubuntu/fatdog/fatdog.cpp",
+  "file": "/home/ubuntu/fatdog/fatdog.cpp"
+}
+]
