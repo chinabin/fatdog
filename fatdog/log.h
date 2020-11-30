@@ -82,10 +82,7 @@ namespace fatdog
     {
     public:
         typedef std::shared_ptr<Logger> ptr;
-        Logger(const std::string &name = "root", const LogLevel::Level level = LogLevel::INFO)
-            : m_name(name), m_level(level)
-        {
-        }
+        Logger(const std::string &name = "root", const LogLevel::Level level = LogLevel::INFO);
         ~Logger();
 
     public:
@@ -116,7 +113,7 @@ namespace fatdog
         LogLevel::Level m_level;
 
         std::vector<std::shared_ptr<LogAppender>> m_appenders;
-        std::shared_ptr<LogFormatter> m_formatter;
+        std::shared_ptr<LogFormatter> m_formatter;              // sometimes, I just want it default
     };
 
     class LogAppender
@@ -135,7 +132,7 @@ namespace fatdog
 
     protected:
         LogLevel::Level m_level = LogLevel::INFO;
-        std::shared_ptr<LogFormatter> m_formatter;
+        std::shared_ptr<LogFormatter> m_formatter = nullptr;
     };
 
     class StdoutLogAppender : public LogAppender

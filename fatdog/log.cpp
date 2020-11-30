@@ -55,6 +55,12 @@ namespace fatdog
     {
     }
 
+    Logger::Logger(const std::string &name, const LogLevel::Level level)
+        : m_name(name), m_level(level)
+    {
+        m_formatter.reset(new LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
+    }
+
     Logger::~Logger()
     {
     }
@@ -98,6 +104,8 @@ namespace fatdog
 
     void Logger::addAppender(std::shared_ptr<LogAppender> appender)
     {
+        if (appender->getFormatter() == nullptr)
+            appender->setFormatter(m_formatter);
         m_appenders.push_back(appender);
     }
 

@@ -204,14 +204,9 @@ void fun(std::string strPattern)
     }
 }
 
-int main()
+// v0.01 log
+void test1()
 {
-    // std::string str = "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n";
-    // // std::string str = "%dm%n";
-    // // init(str);
-    // str = "[[[%d{%Y-%m-%d %H:%M:%S}%T{%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n";
-    // fun(str);
-
     fatdog::Logger::ptr logger(new fatdog::Logger);
 
     fatdog::StdoutLogAppender::ptr stdout_appender(new fatdog::StdoutLogAppender);
@@ -240,6 +235,52 @@ int main()
         logger->info(event);
     }
     std::cout << "end" << std::endl;
+}
+
+// v0.02 log
+void test2()
+{
+    fatdog::Logger::ptr logger(new fatdog::Logger);
+
+    fatdog::StdoutLogAppender::ptr stdout_appender(new fatdog::StdoutLogAppender);
+    logger->addAppender(stdout_appender);
+    fatdog::FileLogAppender::ptr file_appender(new fatdog::FileLogAppender("log.txt"));
+    logger->addAppender(file_appender);
+
+    // we don't need this anymore, we can use default formatter
+    // fatdog::LogFormatter::ptr formatter(new fatdog::LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
+    // stdout_appender->setFormatter(formatter);
+    // file_appender->setFormatter(formatter);
+
+    std::cout << "begin" << std::endl;
+    {
+        fatdog::LogEvent::ptr event(new fatdog::LogEvent(logger, fatdog::LogLevel::DEBUG, __FILE__, __LINE__, 0, 1, 2, time(0), "haha"));
+        event->getSS() << "this is a test";
+        logger->info(event);
+    }
+    {
+        fatdog::LogEvent::ptr event(new fatdog::LogEvent(logger, fatdog::LogLevel::DEBUG, __FILE__, __LINE__, 0, 1, 2, time(0), "haha"));
+        event->getSS() << "hehehaha";
+        logger->info(event);
+    }
+    {
+        fatdog::LogEvent::ptr event(new fatdog::LogEvent(logger, fatdog::LogLevel::DEBUG, __FILE__, __LINE__, 0, 1, 2, time(0), "haha"));
+        event->getSS() << "lalala";
+        logger->info(event);
+    }
+    std::cout << "end" << std::endl;
+}
+
+int main()
+{
+    // std::string str = "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n";
+    // // std::string str = "%dm%n";
+    // // init(str);
+    // str = "[[[%d{%Y-%m-%d %H:%M:%S}%T{%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n";
+    // fun(str);
+
+    // test1();
+    test2();
 
     return 0;
 }
