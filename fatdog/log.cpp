@@ -140,8 +140,8 @@ namespace fatdog
         std::cout << m_formatter->format(logger, level, event);
     }
 
-    FileLogAppender::FileLogAppender(const std::string &filename)
-        : m_filename(filename)
+    FileLogAppender::FileLogAppender(const std::string &filename, LogLevel::Level level)
+        : m_filename(filename), LogAppender(level)
     {
         reopen();
     }
@@ -426,6 +426,7 @@ namespace fatdog
                 i = tmp - 1;
                 vec.push_back(std::make_tuple(nstr, fmt, 0));
                 nstr.clear();
+                m_error = true;
             }
         }
 

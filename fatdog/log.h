@@ -113,13 +113,18 @@ namespace fatdog
         LogLevel::Level m_level;
 
         std::vector<std::shared_ptr<LogAppender>> m_appenders;
-        std::shared_ptr<LogFormatter> m_formatter;              // sometimes, I just want it default
+        std::shared_ptr<LogFormatter> m_formatter; // sometimes, I just want it default
     };
 
     class LogAppender
     {
     public:
         typedef std::shared_ptr<LogAppender> ptr;
+
+        LogAppender(LogLevel::Level level = LogLevel::INFO)
+            : m_level(level)
+        {
+        }
         virtual ~LogAppender(){};
 
         void setFormatter(std::shared_ptr<LogFormatter> formatter) { m_formatter = formatter; }
@@ -140,6 +145,11 @@ namespace fatdog
     public:
         typedef std::shared_ptr<StdoutLogAppender> ptr;
 
+        StdoutLogAppender(LogLevel::Level level = LogLevel::INFO)
+            : LogAppender(level)
+        {
+        }
+
         virtual void log(Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event) override;
     };
 
@@ -147,7 +157,7 @@ namespace fatdog
     {
     public:
         typedef std::shared_ptr<FileLogAppender> ptr;
-        FileLogAppender(const std::string &filename);
+        FileLogAppender(const std::string &filename, LogLevel::Level level = LogLevel::INFO);
         void log(Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event) override;
 
         bool reopen();
@@ -187,6 +197,7 @@ namespace fatdog
         std::string format(std::shared_ptr<Logger> logger, LogLevel::Level level, LogEvent::ptr event);
         void init();
 
+        bool isError() const { return m_error; }
         const std::string getPattern() const { return m_pattern; }
 
     public:
@@ -203,6 +214,7 @@ namespace fatdog
     private:
         std::string m_pattern;
         std::vector<FormatItem::ptr> m_items;
+        bool m_error = false; // 解析的时候是否有错误
     };
 
 } // namespace fatdog
