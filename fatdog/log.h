@@ -60,6 +60,7 @@ namespace fatdog
         LogLevel::Level getLevel() const { return m_level; }
         std::stringstream &getSS() { return m_ss; }
 
+        void format(const char* fmt, ...);
     private:
         uint32_t m_line;
         uint32_t m_threadID;

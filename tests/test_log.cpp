@@ -2,6 +2,7 @@
 #include <tuple>
 #include <string>
 #include <vector>
+#include <stdarg.h>
 
 #include "../fatdog/log.h"
 
@@ -271,6 +272,32 @@ void test2()
     std::cout << "end" << std::endl;
 }
 
+// v0.02 log
+void test3()
+{
+    fatdog::Logger::ptr logger(new fatdog::Logger);
+
+    fatdog::StdoutLogAppender::ptr stdout_appender(new fatdog::StdoutLogAppender);
+    logger->addAppender(stdout_appender);
+    fatdog::FileLogAppender::ptr file_appender(new fatdog::FileLogAppender("log.txt"));
+    logger->addAppender(file_appender);
+
+    // we don't need this anymore, we can use default formatter
+    // fatdog::LogFormatter::ptr formatter(new fatdog::LogFormatter("%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n"));
+    // stdout_appender->setFormatter(formatter);
+    // file_appender->setFormatter(formatter);
+
+    std::cout << "begin" << std::endl;
+    {
+        fatdog::LogEvent::ptr event(new fatdog::LogEvent(logger, fatdog::LogLevel::DEBUG, __FILE__, __LINE__, 0, 1, 2, time(0), "haha"));
+        // event->getSS() << "this is a test";
+        event->format("this %s a test %d %f", "is", 123, 5.67);
+        logger->info(event);
+    }
+    
+    std::cout << "end" << std::endl;
+}
+
 int main()
 {
     // std::string str = "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n";
@@ -281,6 +308,8 @@ int main()
 
     // test1();
     test2();
+    test3();
+
 
     return 0;
 }
