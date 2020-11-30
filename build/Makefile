@@ -274,6 +274,19 @@ NightlyBuild/fast:
 .PHONY : NightlyBuild/fast
 
 #=============================================================================
+# Target rules for targets named test_log
+
+# Build rule for target.
+test_log: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_log
+.PHONY : test_log
+
+# fast build rule for target.
+test_log/fast:
+	$(MAKE) -f CMakeFiles/test_log.dir/build.make CMakeFiles/test_log.dir/build
+.PHONY : test_log/fast
+
+#=============================================================================
 # Target rules for targets named ExperimentalUpdate
 
 # Build rule for target.
@@ -507,6 +520,60 @@ ExperimentalBuild/fast:
 	$(MAKE) -f CMakeFiles/ExperimentalBuild.dir/build.make CMakeFiles/ExperimentalBuild.dir/build
 .PHONY : ExperimentalBuild/fast
 
+fatdog/log.o: fatdog/log.cpp.o
+
+.PHONY : fatdog/log.o
+
+# target to build an object file
+fatdog/log.cpp.o:
+	$(MAKE) -f CMakeFiles/test_log.dir/build.make CMakeFiles/test_log.dir/fatdog/log.cpp.o
+.PHONY : fatdog/log.cpp.o
+
+fatdog/log.i: fatdog/log.cpp.i
+
+.PHONY : fatdog/log.i
+
+# target to preprocess a source file
+fatdog/log.cpp.i:
+	$(MAKE) -f CMakeFiles/test_log.dir/build.make CMakeFiles/test_log.dir/fatdog/log.cpp.i
+.PHONY : fatdog/log.cpp.i
+
+fatdog/log.s: fatdog/log.cpp.s
+
+.PHONY : fatdog/log.s
+
+# target to generate assembly for a file
+fatdog/log.cpp.s:
+	$(MAKE) -f CMakeFiles/test_log.dir/build.make CMakeFiles/test_log.dir/fatdog/log.cpp.s
+.PHONY : fatdog/log.cpp.s
+
+tests/test_log.o: tests/test_log.cpp.o
+
+.PHONY : tests/test_log.o
+
+# target to build an object file
+tests/test_log.cpp.o:
+	$(MAKE) -f CMakeFiles/test_log.dir/build.make CMakeFiles/test_log.dir/tests/test_log.cpp.o
+.PHONY : tests/test_log.cpp.o
+
+tests/test_log.i: tests/test_log.cpp.i
+
+.PHONY : tests/test_log.i
+
+# target to preprocess a source file
+tests/test_log.cpp.i:
+	$(MAKE) -f CMakeFiles/test_log.dir/build.make CMakeFiles/test_log.dir/tests/test_log.cpp.i
+.PHONY : tests/test_log.cpp.i
+
+tests/test_log.s: tests/test_log.cpp.s
+
+.PHONY : tests/test_log.s
+
+# target to generate assembly for a file
+tests/test_log.cpp.s:
+	$(MAKE) -f CMakeFiles/test_log.dir/build.make CMakeFiles/test_log.dir/tests/test_log.cpp.s
+.PHONY : tests/test_log.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -526,6 +593,7 @@ help:
 	@echo "... NightlyStart"
 	@echo "... NightlyMemoryCheck"
 	@echo "... NightlyBuild"
+	@echo "... test_log"
 	@echo "... ExperimentalUpdate"
 	@echo "... ContinuousBuild"
 	@echo "... Continuous"
@@ -546,6 +614,12 @@ help:
 	@echo "... ContinuousTest"
 	@echo "... ContinuousUpdate"
 	@echo "... ExperimentalBuild"
+	@echo "... fatdog/log.o"
+	@echo "... fatdog/log.i"
+	@echo "... fatdog/log.s"
+	@echo "... tests/test_log.o"
+	@echo "... tests/test_log.i"
+	@echo "... tests/test_log.s"
 .PHONY : help
 
 

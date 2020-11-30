@@ -11,6 +11,7 @@
 /home/ubuntu/fatdog/build/CMakeFiles/NightlyStart.dir
 /home/ubuntu/fatdog/build/CMakeFiles/NightlyMemoryCheck.dir
 /home/ubuntu/fatdog/build/CMakeFiles/NightlyBuild.dir
+/home/ubuntu/fatdog/build/CMakeFiles/test_log.dir
 /home/ubuntu/fatdog/build/CMakeFiles/ExperimentalUpdate.dir
 /home/ubuntu/fatdog/build/CMakeFiles/ContinuousBuild.dir
 /home/ubuntu/fatdog/build/CMakeFiles/Continuous.dir

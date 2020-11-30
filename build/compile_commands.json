@@ -1,7 +1,12 @@
 [
 {
   "directory": "/home/ubuntu/fatdog/build",
-  "command": "/usr/bin/g++-7    -g   -o CMakeFiles/fatdog.dir/fatdog.cpp.o -c /home/ubuntu/fatdog/fatdog.cpp",
-  "file": "/home/ubuntu/fatdog/fatdog.cpp"
+  "command": "/usr/bin/g++-7    -g   -o CMakeFiles/test_log.dir/tests/test_log.cpp.o -c /home/ubuntu/fatdog/tests/test_log.cpp",
+  "file": "/home/ubuntu/fatdog/tests/test_log.cpp"
+},
+{
+  "directory": "/home/ubuntu/fatdog/build",
+  "command": "/usr/bin/g++-7    -g   -o CMakeFiles/test_log.dir/fatdog/log.cpp.o -c /home/ubuntu/fatdog/fatdog/log.cpp",
+  "file": "/home/ubuntu/fatdog/fatdog/log.cpp"
 }
 ]
