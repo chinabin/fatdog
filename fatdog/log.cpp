@@ -72,6 +72,11 @@ namespace fatdog
         va_end(al);
     }
 
+    LogEventWrapper::~LogEventWrapper()
+    {
+        m_event->getLogger()->log(m_event->getLevel(), m_event);
+    }
+
     Logger::Logger(const std::string &name, const LogLevel::Level level)
         : m_name(name), m_level(level)
     {
@@ -111,6 +116,10 @@ namespace fatdog
     {
         if (level >= m_level)
         {
+            if (m_appenders.empty())
+            {
+                addAppender(LogAppender::ptr(new StdoutLogAppender));
+            }
             auto self = shared_from_this();
             for (auto &it : m_appenders)
             {

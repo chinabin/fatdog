@@ -294,8 +294,16 @@ void test3()
         event->format("this %s a test %d %f", "is", 123, 5.67);
         logger->info(event);
     }
-    
+
     std::cout << "end" << std::endl;
+}
+
+void test4()
+{
+    // use macro
+    fatdog::Logger::ptr logger(new fatdog::Logger);
+    FATDOG_LOG_INFO(logger) << "lalala";
+    FATDOG_LOG_FMT_INFO(logger, "a a a %s %d %f", "miao", 1, 2.34);
 }
 
 int main()
@@ -307,9 +315,9 @@ int main()
     // fun(str);
 
     // test1();
-    test2();
-    test3();
-
+    // test2();
+    // test3();
+    test4();
 
     return 0;
 }

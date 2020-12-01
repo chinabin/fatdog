@@ -17,9 +17,29 @@ LogFormatter: 负责格式化日志信息，处于接收端到输出端的中间
 /*
 Logger::log 调用 LogAppender::log ，后者调用 LogFormatter::format 返回格式化的字符串
 */
+
+#define FATDOG_LOG_LEVEL(logger, level) \
+    if (logger->getLevel() <= level)    \
+    fatdog::LogEventWrapper(fatdog::LogEvent::ptr(new fatdog::LogEvent(logger, level, __FILE__, __LINE__, 0, 1, 2, time(0), "haha"))).getSS()
+
+#define FATDOG_LOG_DEBUG(logger) FATDOG_LOG_LEVEL(logger, fatdog::LogLevel::DEBUG)
+#define FATDOG_LOG_INFO(logger) FATDOG_LOG_LEVEL(logger, fatdog::LogLevel::INFO)
+#define FATDOG_LOG_WARN(logger) FATDOG_LOG_LEVEL(logger, fatdog::LogLevel::WARN)
+#define FATDOG_LOG_ERROR(logger) FATDOG_LOG_LEVEL(logger, fatdog::LogLevel::ERROR)
+#define FATDOG_LOG_FATAL(logger) FATDOG_LOG_LEVEL(logger, fatdog::LogLevel::FATAL)
+
+#define FATDOG_LOG_FMT(logger, level, fmt, ...) \
+    if (logger->getLevel() <= level)            \
+    fatdog::LogEventWrapper(fatdog::LogEvent::ptr(new fatdog::LogEvent(logger, level, __FILE__, __LINE__, 0, 1, 2, time(0), "haha"))).getEvent()->format(fmt, __VA_ARGS__)
+
+#define FATDOG_LOG_FMT_DEBUG(logger, fmt, ...) FATDOG_LOG_FMT(logger, fatdog::LogLevel::DEBUG, fmt, __VA_ARGS__)
+#define FATDOG_LOG_FMT_INFO(logger, fmt, ...) FATDOG_LOG_FMT(logger, fatdog::LogLevel::INFO, fmt, __VA_ARGS__)
+#define FATDOG_LOG_FMT_WARN(logger, fmt, ...) FATDOG_LOG_FMT(logger, fatdog::LogLevel::WARN, fmt, __VA_ARGS__)
+#define FATDOG_LOG_FMT_ERROR(logger, fmt, ...) FATDOG_LOG_FMT(logger, fatdog::LogLevel::ERROR, fmt, __VA_ARGS__)
+#define FATDOG_LOG_FMT_FATAL(logger, fmt, ...) FATDOG_LOG_FMT(logger, fatdog::LogLevel::FATAL, fmt, __VA_ARGS__)
+
 namespace fatdog
 {
-
     class LogAppender;
     class LogFormatter;
     class Logger;
@@ -60,7 +80,8 @@ namespace fatdog
         LogLevel::Level getLevel() const { return m_level; }
         std::stringstream &getSS() { return m_ss; }
 
-        void format(const char* fmt, ...);
+        void format(const char *fmt, ...);
+
     private:
         uint32_t m_line;
         uint32_t m_threadID;
@@ -79,6 +100,24 @@ namespace fatdog
         std::string m_threadName;
     };
 
+    class LogEventWrapper
+    {
+    public:
+        typedef std::shared_ptr<LogEventWrapper> ptr;
+
+        LogEventWrapper(LogEvent::ptr event)
+            : m_event(event)
+        {
+        }
+        ~LogEventWrapper();
+
+        std::stringstream &getSS() { m_event->getSS(); }
+        LogEvent::ptr getEvent() { return m_event; }
+
+    private:
+        LogEvent::ptr m_event;
+    };
+
     class Logger : public std::enable_shared_from_this<Logger>
     {
     public:
@@ -93,7 +132,6 @@ namespace fatdog
         void error(LogEvent::ptr event);
         void fatal(LogEvent::ptr event);
 
-    private:
         void log(LogLevel::Level level, LogEvent::ptr event);
 
     public:
