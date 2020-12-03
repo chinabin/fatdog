@@ -144,6 +144,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named test_config
+
+# Build rule for target.
+test_config: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 test_config
+.PHONY : test_config
+
+# fast build rule for target.
+test_config/fast:
+	$(MAKE) -f CMakeFiles/test_config.dir/build.make CMakeFiles/test_config.dir/build
+.PHONY : test_config/fast
+
+#=============================================================================
 # Target rules for targets named ContinuousSubmit
 
 # Build rule for target.
@@ -520,12 +533,40 @@ ExperimentalBuild/fast:
 	$(MAKE) -f CMakeFiles/ExperimentalBuild.dir/build.make CMakeFiles/ExperimentalBuild.dir/build
 .PHONY : ExperimentalBuild/fast
 
+fatdog/config.o: fatdog/config.cpp.o
+
+.PHONY : fatdog/config.o
+
+# target to build an object file
+fatdog/config.cpp.o:
+	$(MAKE) -f CMakeFiles/test_config.dir/build.make CMakeFiles/test_config.dir/fatdog/config.cpp.o
+.PHONY : fatdog/config.cpp.o
+
+fatdog/config.i: fatdog/config.cpp.i
+
+.PHONY : fatdog/config.i
+
+# target to preprocess a source file
+fatdog/config.cpp.i:
+	$(MAKE) -f CMakeFiles/test_config.dir/build.make CMakeFiles/test_config.dir/fatdog/config.cpp.i
+.PHONY : fatdog/config.cpp.i
+
+fatdog/config.s: fatdog/config.cpp.s
+
+.PHONY : fatdog/config.s
+
+# target to generate assembly for a file
+fatdog/config.cpp.s:
+	$(MAKE) -f CMakeFiles/test_config.dir/build.make CMakeFiles/test_config.dir/fatdog/config.cpp.s
+.PHONY : fatdog/config.cpp.s
+
 fatdog/log.o: fatdog/log.cpp.o
 
 .PHONY : fatdog/log.o
 
 # target to build an object file
 fatdog/log.cpp.o:
+	$(MAKE) -f CMakeFiles/test_config.dir/build.make CMakeFiles/test_config.dir/fatdog/log.cpp.o
 	$(MAKE) -f CMakeFiles/test_log.dir/build.make CMakeFiles/test_log.dir/fatdog/log.cpp.o
 .PHONY : fatdog/log.cpp.o
 
@@ -535,6 +576,7 @@ fatdog/log.i: fatdog/log.cpp.i
 
 # target to preprocess a source file
 fatdog/log.cpp.i:
+	$(MAKE) -f CMakeFiles/test_config.dir/build.make CMakeFiles/test_config.dir/fatdog/log.cpp.i
 	$(MAKE) -f CMakeFiles/test_log.dir/build.make CMakeFiles/test_log.dir/fatdog/log.cpp.i
 .PHONY : fatdog/log.cpp.i
 
@@ -544,8 +586,36 @@ fatdog/log.s: fatdog/log.cpp.s
 
 # target to generate assembly for a file
 fatdog/log.cpp.s:
+	$(MAKE) -f CMakeFiles/test_config.dir/build.make CMakeFiles/test_config.dir/fatdog/log.cpp.s
 	$(MAKE) -f CMakeFiles/test_log.dir/build.make CMakeFiles/test_log.dir/fatdog/log.cpp.s
 .PHONY : fatdog/log.cpp.s
+
+tests/test_config.o: tests/test_config.cpp.o
+
+.PHONY : tests/test_config.o
+
+# target to build an object file
+tests/test_config.cpp.o:
+	$(MAKE) -f CMakeFiles/test_config.dir/build.make CMakeFiles/test_config.dir/tests/test_config.cpp.o
+.PHONY : tests/test_config.cpp.o
+
+tests/test_config.i: tests/test_config.cpp.i
+
+.PHONY : tests/test_config.i
+
+# target to preprocess a source file
+tests/test_config.cpp.i:
+	$(MAKE) -f CMakeFiles/test_config.dir/build.make CMakeFiles/test_config.dir/tests/test_config.cpp.i
+.PHONY : tests/test_config.cpp.i
+
+tests/test_config.s: tests/test_config.cpp.s
+
+.PHONY : tests/test_config.s
+
+# target to generate assembly for a file
+tests/test_config.cpp.s:
+	$(MAKE) -f CMakeFiles/test_config.dir/build.make CMakeFiles/test_config.dir/tests/test_config.cpp.s
+.PHONY : tests/test_config.cpp.s
 
 tests/test_log.o: tests/test_log.cpp.o
 
@@ -583,6 +653,7 @@ help:
 	@echo "... rebuild_cache"
 	@echo "... test"
 	@echo "... package"
+	@echo "... test_config"
 	@echo "... ContinuousSubmit"
 	@echo "... ContinuousMemCheck"
 	@echo "... ContinuousConfigure"
@@ -614,9 +685,15 @@ help:
 	@echo "... ContinuousTest"
 	@echo "... ContinuousUpdate"
 	@echo "... ExperimentalBuild"
+	@echo "... fatdog/config.o"
+	@echo "... fatdog/config.i"
+	@echo "... fatdog/config.s"
 	@echo "... fatdog/log.o"
 	@echo "... fatdog/log.i"
 	@echo "... fatdog/log.s"
+	@echo "... tests/test_config.o"
+	@echo "... tests/test_config.i"
+	@echo "... tests/test_config.s"
 	@echo "... tests/test_log.o"
 	@echo "... tests/test_log.i"
 	@echo "... tests/test_log.s"

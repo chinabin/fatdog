@@ -20,6 +20,12 @@ BUILD_TESTING:BOOL=ON
 //Path to a program.
 BZRCOMMAND:FILEPATH=BZRCOMMAND-NOTFOUND
 
+//The directory containing a CMake configuration file for Boost.
+Boost_DIR:PATH=Boost_DIR-NOTFOUND
+
+//Path to a file.
+Boost_INCLUDE_DIR:PATH=/usr/include
+
 //Path to a program.
 CMAKE_AR:FILEPATH=/usr/bin/ar
 
@@ -302,6 +308,9 @@ fatdog_LIB_DEPENDS:STATIC=
 //Value Computed by CMake
 fatdog_SOURCE_DIR:STATIC=/home/ubuntu/fatdog
 
+//The directory containing a CMake configuration file for yaml-cpp.
+yaml-cpp_DIR:PATH=/usr/local/share/cmake/yaml-cpp
+
 
 ########################
 # INTERNAL cache entries
@@ -309,6 +318,10 @@ fatdog_SOURCE_DIR:STATIC=/home/ubuntu/fatdog
 
 //ADVANCED property for variable: BZRCOMMAND
 BZRCOMMAND-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_DIR
+Boost_DIR-ADVANCED:INTERNAL=1
+//ADVANCED property for variable: Boost_INCLUDE_DIR
+Boost_INCLUDE_DIR-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: CMAKE_AR
 CMAKE_AR-ADVANCED:INTERNAL=1
 //This is the directory where this CMakeCache.txt was created
@@ -514,4 +527,12 @@ SLURM_SBATCH_COMMAND-ADVANCED:INTERNAL=1
 SLURM_SRUN_COMMAND-ADVANCED:INTERNAL=1
 //ADVANCED property for variable: SVNCOMMAND
 SVNCOMMAND-ADVANCED:INTERNAL=1
+//Components requested for this build tree.
+_Boost_COMPONENTS_SEARCHED:INTERNAL=
+//Last used Boost_INCLUDE_DIR value.
+_Boost_INCLUDE_DIR_LAST:INTERNAL=/usr/include
+//Last used Boost_NAMESPACE value.
+_Boost_NAMESPACE_LAST:INTERNAL=boost
+//Last used Boost_USE_MULTITHREADED value.
+_Boost_USE_MULTITHREADED_LAST:INTERNAL=TRUE
 
