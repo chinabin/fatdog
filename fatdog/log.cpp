@@ -30,7 +30,7 @@ namespace fatdog
         return "UNKNOWN";
     }
 
-    LogLevel::Level FromString(const std::string &str)
+    LogLevel::Level LogLevel::FromString(const std::string &str)
     {
 #define XX(level, name) \
     if (str == #name)   \
@@ -49,6 +49,7 @@ namespace fatdog
         XX(FATAL, FATAL);
 
 #undef XX
+    return LogLevel::UNKNOWN;
     }
 
     LogEvent::LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level, const char *file, int32_t line, uint32_t elapse, uint32_t thread_id, uint32_t fiber_id, uint64_t time, const std::string &thread_name)
@@ -167,7 +168,7 @@ namespace fatdog
     }
 
     FileLogAppender::FileLogAppender(const std::string &filename, LogLevel::Level level)
-        : m_filename(filename), LogAppender(level)
+        : LogAppender(level), m_filename(filename)
     {
         reopen();
     }

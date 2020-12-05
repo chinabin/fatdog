@@ -1,2 +1,0 @@
-/usr/bin/ar qc libfatdog.a  CMakeFiles/fatdog.dir/fatdog.cpp.o
-/usr/bin/ranlib libfatdog.a

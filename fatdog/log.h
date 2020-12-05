@@ -6,6 +6,7 @@
 #include <cstdint> // for int8_t int16_t etc type
 #include <vector>
 #include <sstream>
+#include <set>
 #include <fstream>
 
 /*
@@ -83,21 +84,21 @@ namespace fatdog
         void format(const char *fmt, ...);
 
     private:
+        const char *m_filename;
         uint32_t m_line;
-        uint32_t m_threadID;
-        uint32_t m_fiberID;
-        const char *m_filename = nullptr;
         // 程序启动开始到现在的毫秒数
         uint32_t m_elapse = 0;
+        uint32_t m_threadID;
+        uint32_t m_fiberID;
         // 时间戳
         uint64_t m_time = 0;
-        // 日志内容流
-        std::stringstream m_ss;
+        std::string m_threadName;
         // 日志器
         std::shared_ptr<Logger> m_logger;
         // 日志等级
         LogLevel::Level m_level;
-        std::string m_threadName;
+        // 日志内容流
+        std::stringstream m_ss;
     };
 
     class LogEventWrapper
@@ -111,7 +112,7 @@ namespace fatdog
         }
         ~LogEventWrapper();
 
-        std::stringstream &getSS() { m_event->getSS(); }
+        std::stringstream &getSS() { return m_event->getSS(); }
         LogEvent::ptr getEvent() { return m_event; }
 
     private:
@@ -254,6 +255,37 @@ namespace fatdog
         std::string m_pattern;
         std::vector<FormatItem::ptr> m_items;
         bool m_error = false; // 解析的时候是否有错误
+    };
+
+    struct LogAppenderDefine
+    {
+        int type = 0; //1 File, 2 Stdout
+        LogLevel::Level level = LogLevel::UNKNOWN;
+        std::string formatter;
+        std::string file;
+
+        bool operator==(const LogAppenderDefine &oth) const
+        {
+            return type == oth.type && level == oth.level && formatter == oth.formatter && file == oth.file;
+        }
+    };
+
+    struct LogDefine
+    {
+        std::string name;
+        LogLevel::Level level = LogLevel::UNKNOWN;
+        std::string formatter;
+        std::vector<LogAppenderDefine> appenders;
+
+        bool operator==(const LogDefine &oth) const
+        {
+            return name == oth.name && level == oth.level && formatter == oth.formatter && appenders == appenders;
+        }
+
+        bool operator<(const LogDefine &oth) const
+        {
+            return name < oth.name;
+        }
     };
 
 } // namespace fatdog
