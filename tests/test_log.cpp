@@ -306,6 +306,12 @@ void test4()
     FATDOG_LOG_FMT_INFO(logger, "a a a %s %d %f", "miao", 1, 2.34);
 }
 
+void test5()
+{
+    FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "lalala";
+    FATDOG_LOG_FMT_INFO(FATDOG_LOG_NAME("balala"), "a a a %s %d %f", "miao", 1, 2.34);
+}
+
 int main()
 {
     // std::string str = "%d{%Y-%m-%d %H:%M:%S}%T%t%T%N%T%F%T[%p]%T[%c]%T%f:%l%T%m%n";
@@ -317,7 +323,8 @@ int main()
     // test1();
     // test2();
     // test3();
-    test4();
+    // test4();
+    test5();
 
     return 0;
 }

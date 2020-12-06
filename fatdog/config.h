@@ -162,8 +162,7 @@ namespace fatdog
             }
             catch (std::exception &e)
             {
-                Logger::ptr logger(new Logger());
-                FATDOG_LOG_INFO(logger) << "ConfigVar::toString exception "
+                FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "ConfigVar::toString exception "
                                         << e.what() << " convert: " << typeid(m_val).name() << " to string";
             }
             return "";
@@ -178,8 +177,7 @@ namespace fatdog
             }
             catch (std::exception &e)
             {
-                Logger::ptr logger(new Logger());
-                FATDOG_LOG_INFO(logger) << "ConfigVar::toString exception " 
+                FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "ConfigVar::toString exception " 
                                         << e.what() << " convert: string to " << typeid(m_val).name()
                                         << " - " << str;
             }
@@ -201,19 +199,18 @@ namespace fatdog
         static typename ConfigVar<T>::ptr lookUp(const std::string &name,
                                                  const T &default_value, const std::string &description = "")
         {
-            Logger::ptr logger(new Logger());
             auto t = m_mapVars.find(name);
             if (t != m_mapVars.end())
             {
                 auto v = std::dynamic_pointer_cast<ConfigVar<T>>(t->second);
                 if (v)
                 {
-                    FATDOG_LOG_INFO(logger) << "Lookup name=" << name << " exists";
+                    FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "Lookup name=" << name << " exists";
                     return v;
                 }
                 else
                 {
-                    FATDOG_LOG_INFO(logger) << "Lookup name=" << name << " exists but type not "
+                    FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "Lookup name=" << name << " exists but type not "
                                             << typeid(T).name() << " real_type=" << t->second->getTypeName()
                                             << " and val is " << t->second->toString();
                     return nullptr;

@@ -7,6 +7,7 @@
 #include <vector>
 #include <sstream>
 #include <set>
+#include <map>
 #include <fstream>
 
 /*
@@ -288,6 +289,36 @@ namespace fatdog
         }
     };
 
+    class LoggerManager
+    {
+    public:
+        LoggerManager();
+
+        Logger::ptr getRoot() const { return m_root; }
+        Logger::ptr getLogger(const std::string &name);
+
+    private:
+        std::map<std::string, Logger::ptr> m_loggers;
+        Logger::ptr m_root;
+    };
+
+    template<class T>
+class Singleton {
+public:
+    /**
+     * @brief 返回单例裸指针
+     */
+    static T* GetInstance() {
+        static T v;
+        return &v;
+    }
+};
+
 } // namespace fatdog
+
+typedef fatdog::Singleton<fatdog::LoggerManager> LoggerMgr;
+
+#define FATDOG_LOG_ROOT() LoggerMgr::GetInstance()->getRoot()
+#define FATDOG_LOG_NAME(name) LoggerMgr::GetInstance()->getLogger(name)
 
 #endif

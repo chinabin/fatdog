@@ -514,4 +514,27 @@ namespace fatdog
         return ss.str();
     }
 
+
+    LoggerManager::LoggerManager()
+    {
+        m_root.reset(new Logger("root", LogLevel::INFO));
+        m_root->addAppender(LogAppender::ptr(new StdoutLogAppender(LogLevel::INFO)));
+
+        m_loggers[m_root->getName()] = m_root;
+    }
+
+    Logger::ptr LoggerManager::getLogger(const std::string &name)
+    {
+        auto t = m_loggers.find(name);
+        if(t != m_loggers.end())
+        {
+            return t->second;
+        }
+
+        Logger::ptr logger(new Logger(name));
+        m_loggers[name] = logger;
+
+        return logger;
+    }
+
 } // namespace fatdog
