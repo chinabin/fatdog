@@ -70,20 +70,14 @@ void test1()
     FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << t1->toString();
     auto t2 = fatdog::Config::lookUp("size", (float)18, "hahahaha");
 
+    FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "lulala~";
+    FATDOG_LOG_INFO(FATDOG_LOG_NAME("system")) << "gua gua gua";
+    std::cout << LoggerMgr::GetInstance()->toYamlString() << std::endl;
     YAML::Node root = YAML::LoadFile("/home/ubuntu/fatdog/tests/test.yml");
-    
-    fatdog::ConfigVar<std::set<fatdog::LogDefine>>::ptr var(new fatdog::ConfigVar<std::set<fatdog::LogDefine>>("logs", std::set<fatdog::LogDefine>(), "log config"));
-
-    std::stringstream ss;
-    ss << root["logs"];
-
-    var->fromString(ss.str());
-    for(auto& it : var->getValue())
-    {
-        FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << it.name;
-    }
-
-    FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << var->toString();
+    fatdog::Config::LoadFromYaml(root);
+    FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "lulala~";
+    FATDOG_LOG_INFO(FATDOG_LOG_NAME("system")) << "gua gua gua";
+    std::cout << LoggerMgr::GetInstance()->toYamlString() << std::endl;
 }
 
 int main()

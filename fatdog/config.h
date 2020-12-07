@@ -4,6 +4,8 @@
 #include <boost/lexical_cast.hpp>
 #include <string>
 #include <unordered_map>
+#include <map>
+#include <functional>
 #include <memory>
 #include <yaml-cpp/yaml.h>
 
@@ -28,89 +30,6 @@ namespace fatdog
         T operator()(const F &val)
         {
             return boost::lexical_cast<T>(val);
-        }
-    };
-
-    template <>
-    class LexicalCast<std::string, std::set<LogDefine>>
-    {
-    public:
-        std::set<LogDefine> operator()(const std::string &v)
-        {
-            YAML::Node node = YAML::Load(v);
-            std::set<LogDefine> vec;
-
-            for (int i = 0; i < node.size(); ++i)
-            {
-                auto n = node[i];
-
-                LogDefine ld;
-                ld.name = n["name"].as<std::string>();
-                ld.level = LogLevel::FromString(n["level"].as<std::string>());
-                ld.formatter = n["formatter"].as<std::string>();
-
-                for (int j = 0; j < n["appender"].size(); ++j)
-                {
-                    LogAppenderDefine lad;
-                    auto na = n["appender"][j];
-                    std::string appenderType = na["type"].as<std::string>();
-                    if (appenderType == "FileLogAppender")
-                    {
-                        lad.type = 1;
-                        lad.level = LogLevel::FromString(na["level"].as<std::string>());
-                        lad.formatter = na["formatter"].as<std::string>();
-                        lad.file = na["file"].as<std::string>();
-                    }
-                    else if(appenderType == "StdoutLogAppender")
-                    {
-                        lad.type = 2;
-                        lad.level = LogLevel::FromString(na["level"].as<std::string>());
-                        lad.formatter = na["formatter"].as<std::string>();
-                    }
-                    ld.appenders.push_back(lad);
-                }
-                vec.insert(ld);
-            }
-
-            return vec;
-        }
-    };
-
-    template <>
-    class LexicalCast<std::set<LogDefine>, std::string>
-    {
-    public:
-        std::string operator()(const std::set<LogDefine> &v)
-        {
-            YAML::Node node;
-            for (auto &i : v)
-            {
-                YAML::Node n;
-                n["name"] = i.name;
-                n["level"] = LogLevel::ToString(i.level);
-                n["formatter"] = i.formatter;
-
-                for (auto &a : i.appenders)
-                {
-                    YAML::Node na;
-                    if (a.type == 1)
-                    {
-                        na["type"] = "FileLogAppender";
-                        na["file"] = a.file;
-                    }
-                    else if (a.type == 2)
-                    {
-                        na["type"] = "StdoutLogAppender";
-                    }
-                    na["level"] = LogLevel::ToString(a.level);
-                    na["formatter"] = a.formatter;
-                    n["appenders"].push_back(na);
-                }
-                node.push_back(n);
-            }
-            std::stringstream ss;
-            ss << node;
-            return ss.str();
         }
     };
 
@@ -142,6 +61,8 @@ namespace fatdog
     {
     public:
         typedef std::shared_ptr<ConfigVar> ptr;
+        typedef std::function<void(const T &old_value, const T &new_value)> on_change_cb;
+
         ConfigVar(const std::string &name, const T &default_value, const std::string &description = "")
             : ConfigVarBase(name, description), m_val(default_value)
         {
@@ -151,7 +72,38 @@ namespace fatdog
 
         std::string getTypeName() const override { return typeid(T).name(); }
         const T getValue() const { return m_val; }
-        void setValue(const T &v) { m_val = v; }
+        void setValue(const T &v)
+        {
+            if (v == m_val)
+            {
+                return;
+            }
+            for (auto &i : m_cbs)
+            {
+                i.second(m_val, v);
+            }
+
+            m_val = v;
+        }
+
+        uint64_t addListener(on_change_cb cb)
+        {
+            static uint64_t s_fun_id = 0;
+            ++s_fun_id;
+            m_cbs[s_fun_id] = cb;
+            return s_fun_id;
+        }
+
+        void delListener(uint64_t key)
+        {
+            m_cbs.erase(key);
+        }
+
+        on_change_cb getListener(uint64_t key)
+        {
+            auto it = m_cbs.find(key);
+            return it == m_cbs.end() ? nullptr : it->second;
+        }
 
     public:
         std::string toString() override
@@ -163,7 +115,7 @@ namespace fatdog
             catch (std::exception &e)
             {
                 FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "ConfigVar::toString exception "
-                                        << e.what() << " convert: " << typeid(m_val).name() << " to string";
+                                                   << e.what() << " convert: " << typeid(m_val).name() << " to string";
             }
             return "";
         }
@@ -177,15 +129,17 @@ namespace fatdog
             }
             catch (std::exception &e)
             {
-                FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "ConfigVar::toString exception " 
-                                        << e.what() << " convert: string to " << typeid(m_val).name()
-                                        << " - " << str;
+                FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "ConfigVar::toString exception "
+                                                   << e.what() << " convert: string to " << typeid(m_val).name()
+                                                   << " - " << str;
             }
             return false;
         }
 
     private:
         T m_val;
+
+        std::map<uint64_t, on_change_cb> m_cbs;
     };
 
     class Config
@@ -199,8 +153,8 @@ namespace fatdog
         static typename ConfigVar<T>::ptr lookUp(const std::string &name,
                                                  const T &default_value, const std::string &description = "")
         {
-            auto t = m_mapVars.find(name);
-            if (t != m_mapVars.end())
+            auto t = GetDatas().find(name);
+            if (t != GetDatas().end())
             {
                 auto v = std::dynamic_pointer_cast<ConfigVar<T>>(t->second);
                 if (v)
@@ -211,14 +165,14 @@ namespace fatdog
                 else
                 {
                     FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "Lookup name=" << name << " exists but type not "
-                                            << typeid(T).name() << " real_type=" << t->second->getTypeName()
-                                            << " and val is " << t->second->toString();
+                                                       << typeid(T).name() << " real_type=" << t->second->getTypeName()
+                                                       << " and val is " << t->second->toString();
                     return nullptr;
                 }
             }
 
             typename ConfigVar<T>::ptr v(new ConfigVar<T>(name, default_value, description));
-            m_mapVars[name] = v;
+            GetDatas()[name] = v;
 
             return v;
         }
@@ -226,16 +180,28 @@ namespace fatdog
         template <class T>
         static typename ConfigVar<T>::ptr lookUp(const std::string &name)
         {
-            auto t = m_mapVars.find(name);
-            if (t == m_mapVars.end())
+            auto t = GetDatas().find(name);
+            if (t == GetDatas().end())
             {
                 return nullptr;
             }
 
             return std::dynamic_pointer_cast<ConfigVar<T>>(t->second);
         }
-        // private:
-        static ConfigVarMap m_mapVars;
+
+        // 将已经保存的配置项(字符串)加载为配置
+        static void LoadFromYaml(const YAML::Node &root);
+
+        // 返回已经保存的配置项的基类指针
+        static ConfigVarBase::ptr LookupBase(const std::string &name);
+
+    private:
+        // static ConfigVarMap m_mapVars;
+        static ConfigVarMap &GetDatas()
+        {
+            static ConfigVarMap s_datas;
+            return s_datas;
+        }
     };
 } // namespace fatdog
 

@@ -5,6 +5,7 @@
 #include <stdarg.h>
 
 #include "../fatdog/log.h"
+#include "../fatdog/config.h"
 
 void init(std::string m_pattern)
 {

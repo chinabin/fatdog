@@ -6,6 +6,8 @@
 #include <tuple>
 #include <stdarg.h>
 
+#include "config.h"
+
 namespace fatdog
 {
 
@@ -49,7 +51,7 @@ namespace fatdog
         XX(FATAL, FATAL);
 
 #undef XX
-    return LogLevel::UNKNOWN;
+        return LogLevel::UNKNOWN;
     }
 
     LogEvent::LogEvent(std::shared_ptr<Logger> logger, LogLevel::Level level, const char *file, int32_t line, uint32_t elapse, uint32_t thread_id, uint32_t fiber_id, uint64_t time, const std::string &thread_name)
@@ -162,9 +164,57 @@ namespace fatdog
         m_formatter = formatter;
     }
 
+    void Logger::setFormatter(const std::string &val)
+    {
+        fatdog::LogFormatter::ptr new_val(new fatdog::LogFormatter(val));
+        if (new_val->isError())
+        {
+            std::cout << "Logger setFormatter name=" << m_name
+                      << " value=" << val << " invalid formatter"
+                      << std::endl;
+            return;
+        }
+        setFormatter(new_val);
+    }
+
+    std::string Logger::toYamlString()
+    {
+        YAML::Node node;
+        node["name"] = m_name;
+        node["level"] = LogLevel::ToString(m_level);
+
+        if (m_formatter)
+        {
+            node["formatter"] = m_formatter->getPattern();
+        }
+
+        for (auto &i : m_appenders)
+        {
+            node["appenders"].push_back(YAML::Load(i->toYamlString()));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+
     void StdoutLogAppender::log(Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event)
     {
         std::cout << m_formatter->format(logger, level, event);
+    }
+
+    std::string StdoutLogAppender::toYamlString()
+    {
+        YAML::Node node;
+        node["type"] = "StdoutLogAppender";
+        node["level"] = LogLevel::ToString(m_level);
+
+        if (m_formatter)
+        {
+            node["formatter"] = m_formatter->getPattern();
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
     }
 
     FileLogAppender::FileLogAppender(const std::string &filename, LogLevel::Level level)
@@ -199,6 +249,22 @@ namespace fatdog
         }
         m_filestream.open(m_filename, std::ios::app);
         return !!m_filestream;
+    }
+
+    std::string FileLogAppender::toYamlString()
+    {
+        YAML::Node node;
+        node["type"] = "FileLogAppender";
+        node["file"] = m_filename;
+        node["level"] = LogLevel::ToString(m_level);
+
+        if (m_formatter)
+        {
+            node["formatter"] = m_formatter->getPattern();
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
     }
 
     class MessageFormatItem : public LogFormatter::FormatItem
@@ -514,7 +580,6 @@ namespace fatdog
         return ss.str();
     }
 
-
     LoggerManager::LoggerManager()
     {
         m_root.reset(new Logger("root", LogLevel::INFO));
@@ -526,7 +591,7 @@ namespace fatdog
     Logger::ptr LoggerManager::getLogger(const std::string &name)
     {
         auto t = m_loggers.find(name);
-        if(t != m_loggers.end())
+        if (t != m_loggers.end())
         {
             return t->second;
         }
@@ -536,5 +601,211 @@ namespace fatdog
 
         return logger;
     }
+
+    std::string LoggerManager::toYamlString()
+    {
+        YAML::Node node;
+        for (auto &i : m_loggers)
+        {
+            node.push_back(YAML::Load(i.second->toYamlString()));
+        }
+        std::stringstream ss;
+        ss << node;
+        return ss.str();
+    }
+
+    struct LogAppenderDefine
+    {
+        int type = 0; //1 File, 2 Stdout
+        LogLevel::Level level = LogLevel::UNKNOWN;
+        std::string formatter;
+        std::string file;
+
+        bool operator==(const LogAppenderDefine &oth) const
+        {
+            return type == oth.type && level == oth.level && formatter == oth.formatter && file == oth.file;
+        }
+    };
+
+    struct LogDefine
+    {
+        std::string name;
+        LogLevel::Level level = LogLevel::UNKNOWN;
+        std::string formatter;
+        std::vector<LogAppenderDefine> appenders;
+
+        bool operator==(const LogDefine &oth) const
+        {
+            return name == oth.name && level == oth.level && formatter == oth.formatter && appenders == appenders;
+        }
+
+        bool operator<(const LogDefine &oth) const
+        {
+            return name < oth.name;
+        }
+    };
+
+    template <>
+    class LexicalCast<std::string, std::set<LogDefine>>
+    {
+    public:
+        std::set<LogDefine> operator()(const std::string &v)
+        {
+            YAML::Node node = YAML::Load(v);
+            std::set<LogDefine> vec;
+
+            for (int i = 0; i < node.size(); ++i)
+            {
+                auto n = node[i];
+
+                LogDefine ld;
+                ld.name = n["name"].as<std::string>();
+                ld.level = LogLevel::FromString(n["level"].as<std::string>());
+                ld.formatter = n["formatter"].as<std::string>();
+
+                for (int j = 0; j < n["appender"].size(); ++j)
+                {
+                    LogAppenderDefine lad;
+                    auto na = n["appender"][j];
+                    std::string appenderType = na["type"].as<std::string>();
+                    if (appenderType == "FileLogAppender")
+                    {
+                        lad.type = 1;
+                        lad.level = LogLevel::FromString(na["level"].as<std::string>());
+                        lad.formatter = na["formatter"].as<std::string>();
+                        lad.file = na["file"].as<std::string>();
+                    }
+                    else if (appenderType == "StdoutLogAppender")
+                    {
+                        lad.type = 2;
+                        lad.level = LogLevel::FromString(na["level"].as<std::string>());
+                        lad.formatter = na["formatter"].as<std::string>();
+                    }
+                    ld.appenders.push_back(lad);
+                }
+                vec.insert(ld);
+            }
+
+            return vec;
+        }
+    };
+
+    template <>
+    class LexicalCast<std::set<LogDefine>, std::string>
+    {
+    public:
+        std::string operator()(const std::set<LogDefine> &v)
+        {
+            YAML::Node node;
+            for (auto &i : v)
+            {
+                YAML::Node n;
+                n["name"] = i.name;
+                n["level"] = LogLevel::ToString(i.level);
+                n["formatter"] = i.formatter;
+
+                for (auto &a : i.appenders)
+                {
+                    YAML::Node na;
+                    if (a.type == 1)
+                    {
+                        na["type"] = "FileLogAppender";
+                        na["file"] = a.file;
+                    }
+                    else if (a.type == 2)
+                    {
+                        na["type"] = "StdoutLogAppender";
+                    }
+                    na["level"] = LogLevel::ToString(a.level);
+                    na["formatter"] = a.formatter;
+                    n["appenders"].push_back(na);
+                }
+                node.push_back(n);
+            }
+            std::stringstream ss;
+            ss << node;
+            return ss.str();
+        }
+    };
+
+    fatdog::ConfigVar<std::set<LogDefine>>::ptr g_log_defines =
+        fatdog::Config::lookUp("logs", std::set<LogDefine>(), "logs config");
+
+    struct LogIniter
+    {
+        LogIniter()
+        {
+            g_log_defines->addListener([](const std::set<LogDefine> &old_value,
+                                          const std::set<LogDefine> &new_value) {
+                FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "on_logger_conf_changed";
+                for (auto &i : new_value)
+                {
+                    auto it = old_value.find(i);
+                    fatdog::Logger::ptr logger;
+                    if (it == old_value.end())
+                    {
+                        //新增logger
+                        logger = FATDOG_LOG_NAME(i.name);
+                    }
+                    else
+                    {
+                        if (!(i == *it))
+                        {
+                            //修改的logger
+                            logger = FATDOG_LOG_NAME(i.name);
+                        }
+                    }
+                    logger->setLevel(i.level);
+                    if (!i.formatter.empty())
+                    {
+                        logger->setFormatter(i.formatter);
+                    }
+
+                    logger->clearAppenders();
+                    for (auto &a : i.appenders)
+                    {
+                        fatdog::LogAppender::ptr ap;
+                        if (a.type == 1)
+                        {
+                            ap.reset(new FileLogAppender(a.file));
+                        }
+                        else if (a.type == 2)
+                        {
+                            ap.reset(new StdoutLogAppender);
+                        }
+                        ap->setLevel(a.level);
+                        if (!a.formatter.empty())
+                        {
+                            LogFormatter::ptr fmt(new LogFormatter(a.formatter));
+                            if (!fmt->isError())
+                            {
+                                ap->setFormatter(fmt);
+                            }
+                            else
+                            {
+                                FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "log.name=" << i.name << " appender type=" << a.type
+                                                                   << " formatter=" << a.formatter << " is invalid" << std::endl;
+                            }
+                        }
+                        logger->addAppender(ap);
+                    }
+                }
+
+                for (auto &i : old_value)
+                {
+                    auto it = new_value.find(i);
+                    if (it == new_value.end())
+                    {
+                        //删除logger
+                        auto logger = FATDOG_LOG_NAME(i.name);
+                        logger->setLevel((LogLevel::Level)0);
+                        logger->clearAppenders();
+                    }
+                }
+            });
+        }
+    };
+
+    static LogIniter __log_init;
 
 } // namespace fatdog

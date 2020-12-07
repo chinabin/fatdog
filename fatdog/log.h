@@ -147,8 +147,10 @@ namespace fatdog
         void clearAppenders();
 
         void setFormatter(std::shared_ptr<LogFormatter> formatter);
+        void setFormatter(const std::string& str);
         std::shared_ptr<LogFormatter> getFormatter() const { return m_formatter; }
 
+        std::string toYamlString();
     private:
         std::string m_name;
         LogLevel::Level m_level;
@@ -175,6 +177,7 @@ namespace fatdog
         void setLevel(const LogLevel::Level level) { m_level = level; }
 
         virtual void log(Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event) = 0;
+        virtual std::string toYamlString() = 0;
 
     protected:
         LogLevel::Level m_level = LogLevel::INFO;
@@ -192,6 +195,7 @@ namespace fatdog
         }
 
         virtual void log(Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event) override;
+        std::string toYamlString() override;
     };
 
     class FileLogAppender : public LogAppender
@@ -200,6 +204,7 @@ namespace fatdog
         typedef std::shared_ptr<FileLogAppender> ptr;
         FileLogAppender(const std::string &filename, LogLevel::Level level = LogLevel::INFO);
         void log(Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event) override;
+        std::string toYamlString() override;
 
         bool reopen();
 
@@ -258,37 +263,6 @@ namespace fatdog
         bool m_error = false; // 解析的时候是否有错误
     };
 
-    struct LogAppenderDefine
-    {
-        int type = 0; //1 File, 2 Stdout
-        LogLevel::Level level = LogLevel::UNKNOWN;
-        std::string formatter;
-        std::string file;
-
-        bool operator==(const LogAppenderDefine &oth) const
-        {
-            return type == oth.type && level == oth.level && formatter == oth.formatter && file == oth.file;
-        }
-    };
-
-    struct LogDefine
-    {
-        std::string name;
-        LogLevel::Level level = LogLevel::UNKNOWN;
-        std::string formatter;
-        std::vector<LogAppenderDefine> appenders;
-
-        bool operator==(const LogDefine &oth) const
-        {
-            return name == oth.name && level == oth.level && formatter == oth.formatter && appenders == appenders;
-        }
-
-        bool operator<(const LogDefine &oth) const
-        {
-            return name < oth.name;
-        }
-    };
-
     class LoggerManager
     {
     public:
@@ -296,6 +270,7 @@ namespace fatdog
 
         Logger::ptr getRoot() const { return m_root; }
         Logger::ptr getLogger(const std::string &name);
+        std::string toYamlString();
 
     private:
         std::map<std::string, Logger::ptr> m_loggers;

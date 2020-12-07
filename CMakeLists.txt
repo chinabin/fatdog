@@ -35,6 +35,7 @@ enable_testing()
 
 # add_library(fatdog fatdog.cpp)
 add_executable(test_log tests/test_log.cpp fatdog/log.h fatdog/log.cpp)
+target_link_libraries(test_log yaml-cpp)
 
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
