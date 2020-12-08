@@ -73,7 +73,7 @@ void test1()
     FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "lulala~";
     FATDOG_LOG_INFO(FATDOG_LOG_NAME("system")) << "gua gua gua";
     std::cout << LoggerMgr::GetInstance()->toYamlString() << std::endl;
-    YAML::Node root = YAML::LoadFile("/home/ubuntu/fatdog/tests/test.yml");
+    YAML::Node root = YAML::LoadFile("/home/ubuntu/fatdog/conf/log.yml");
     fatdog::Config::LoadFromYaml(root);
     FATDOG_LOG_INFO(FATDOG_LOG_ROOT()) << "lulala~";
     FATDOG_LOG_INFO(FATDOG_LOG_NAME("system")) << "gua gua gua";
