@@ -5,13 +5,19 @@
 
 fatdog::Logger::ptr g_logger = FATDOG_LOG_ROOT();
 
+int count = 0;
+fatdog::RWMutex s_mutex;
+
 void fun1() {
     FATDOG_LOG_INFO(g_logger) << "name: " << fatdog::Thread::GetName()
                              << " this.name: " << fatdog::Thread::GetThis()->getName()
                              << " id: " << fatdog::GetThreadId()
                              << " this.id: " << fatdog::Thread::GetThis()->getID();
 
-    sleep(20);
+    for(int i = 0; i < 10000; ++i) {
+        // fatdog::RWMutex::WriteLock lock(s_mutex);
+        ++count;
+    }
 }
 
 void fun2() {
@@ -29,5 +35,7 @@ int main(int argc, char** argv) {
         thrs[i]->join();
     }
     FATDOG_LOG_INFO(g_logger) << "thread test end";
+    FATDOG_LOG_INFO(g_logger) << "count=" << count;
+
     return 0;
 }

@@ -6,8 +6,38 @@ static fatdog::Logger::ptr g_logger = FATDOG_LOG_NAME("system");
 
 namespace fatdog
 {
-    static thread_local Thread* t_thread = nullptr;
+    static thread_local Thread *t_thread = nullptr;
     static thread_local std::string t_thread_name = "UNKNOW";
+
+    Semaphore::Semaphore(uint32_t count)
+    {
+        int t = sem_init(&m_sem, 0, count);
+        if (t)
+        {
+            FATDOG_LOG_ERROR(g_logger) << "sem_init failed, rt = " << t;
+            throw std::logic_error("sem_init error");
+        }
+    }
+    Semaphore::~Semaphore()
+    {
+        sem_destroy(&m_sem);
+    }
+
+    int Semaphore::wait()
+    {
+        if (sem_wait(&m_sem))
+        {
+            throw std::logic_error("sem_wait error");
+        }
+    }
+
+    int Semaphore::notify()
+    {
+        if (sem_post(&m_sem))
+        {
+            throw std::logic_error("sem_post error");
+        }
+    }
 
     Thread::Thread(const std::string &name, std::function<void(void)> cb)
         : m_name(name), m_cb(cb)
@@ -18,6 +48,8 @@ namespace fatdog
             FATDOG_LOG_ERROR(g_logger) << "pthread_create failed, rt = " << t << ", name is " << name;
             throw std::logic_error("pthread_create error");
         }
+
+        m_semaphore.wait();
     }
 
     Thread::~Thread()
@@ -26,14 +58,15 @@ namespace fatdog
             pthread_detach(m_thread);
     }
 
-    
-Thread* Thread::GetThis() {
-    return t_thread;
-}
+    Thread *Thread::GetThis()
+    {
+        return t_thread;
+    }
 
-const std::string& Thread::GetName() {
-    return t_thread_name;
-}
+    const std::string &Thread::GetName()
+    {
+        return t_thread_name;
+    }
 
     void Thread::join()
     {
@@ -62,6 +95,8 @@ const std::string& Thread::GetName() {
 
         std::function<void(void)> cb;
         cb.swap(p->m_cb);
+
+        p->m_semaphore.notify();
 
         cb();
 
