@@ -2,10 +2,16 @@
 #define __FATDOG_UTIL_H__
 
 #include <sys/types.h>
+#include <execinfo.h>
+#include <vector>
+#include <string>
 
 namespace fatdog
 {
     pid_t GetThreadId();
+
+    void Backtrace(std::vector<std::string>& bt, int size, int skip = 1);
+    std::string BacktraceToString(int size, int skip = 2, const std::string& prefix = "");
 }
 
 #endif
