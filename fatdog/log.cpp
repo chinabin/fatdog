@@ -133,6 +133,7 @@ namespace fatdog
 
     void Logger::addAppender(std::shared_ptr<LogAppender> appender)
     {
+        MutexType::Lock lock(m_mutex);
         if (appender->getFormatter() == nullptr)
             appender->setFormatter(m_formatter);
         m_appenders.push_back(appender);
@@ -140,6 +141,7 @@ namespace fatdog
 
     void Logger::delAppender(std::shared_ptr<LogAppender> appender)
     {
+        MutexType::Lock lock(m_mutex);
         for (auto it = m_appenders.begin(); it != m_appenders.end();)
         {
             if (*it == appender)
@@ -156,11 +158,19 @@ namespace fatdog
 
     void Logger::clearAppenders()
     {
+        MutexType::Lock lock(m_mutex);
         m_appenders.clear();
+    }
+
+    std::shared_ptr<LogFormatter> Logger::getFormatter()
+    {
+        MutexType::Lock lock(m_mutex);
+        return m_formatter;
     }
 
     void Logger::setFormatter(LogFormatter::ptr formatter)
     {
+        MutexType::Lock lock(m_mutex);
         m_formatter = formatter;
     }
 
@@ -195,6 +205,18 @@ namespace fatdog
         std::stringstream ss;
         ss << node;
         return ss.str();
+    }
+
+    void LogAppender::setFormatter(std::shared_ptr<LogFormatter> formatter)
+    {
+        MutexType::Lock lock(m_mutex);
+        m_formatter = formatter;
+    }
+
+    std::shared_ptr<LogFormatter> LogAppender::getFormatter()
+    {
+        MutexType::Lock lock(m_mutex);
+        return m_formatter;
     }
 
     void StdoutLogAppender::log(Logger::ptr logger, LogLevel::Level level, LogEvent::ptr event)
@@ -243,6 +265,7 @@ namespace fatdog
 
     bool FileLogAppender::reopen()
     {
+        MutexType::Lock lock(m_mutex);
         if (m_filestream.is_open())
         {
             m_filestream.close();
@@ -590,6 +613,7 @@ namespace fatdog
 
     Logger::ptr LoggerManager::getLogger(const std::string &name)
     {
+        MutexType::Lock lock(m_mutex);
         auto t = m_loggers.find(name);
         if (t != m_loggers.end())
         {

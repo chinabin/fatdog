@@ -11,6 +11,7 @@
 #include <fstream>
 
 #include "util.h"
+#include "thread.h"
 
 /*
 Logger: 负责产生日志信息，接收端
@@ -126,6 +127,7 @@ namespace fatdog
     {
     public:
         typedef std::shared_ptr<Logger> ptr;
+        typedef Spinlock MutexType;
         Logger(const std::string &name = "root", const LogLevel::Level level = LogLevel::INFO);
         ~Logger();
 
@@ -149,22 +151,25 @@ namespace fatdog
         void clearAppenders();
 
         void setFormatter(std::shared_ptr<LogFormatter> formatter);
-        void setFormatter(const std::string& str);
-        std::shared_ptr<LogFormatter> getFormatter() const { return m_formatter; }
+        void setFormatter(const std::string &str);
+        std::shared_ptr<LogFormatter> getFormatter();
 
         std::string toYamlString();
+
     private:
         std::string m_name;
         LogLevel::Level m_level;
 
         std::vector<std::shared_ptr<LogAppender>> m_appenders;
         std::shared_ptr<LogFormatter> m_formatter; // sometimes, I just want it default
+        MutexType m_mutex;
     };
 
     class LogAppender
     {
     public:
         typedef std::shared_ptr<LogAppender> ptr;
+        typedef Spinlock MutexType;
 
         LogAppender(LogLevel::Level level = LogLevel::INFO)
             : m_level(level)
@@ -172,8 +177,8 @@ namespace fatdog
         }
         virtual ~LogAppender(){};
 
-        void setFormatter(std::shared_ptr<LogFormatter> formatter) { m_formatter = formatter; }
-        std::shared_ptr<LogFormatter> getFormatter() const { return m_formatter; }
+        void setFormatter(std::shared_ptr<LogFormatter> formatter);
+        std::shared_ptr<LogFormatter> getFormatter();
 
         LogLevel::Level getLevel() const { return m_level; }
         void setLevel(const LogLevel::Level level) { m_level = level; }
@@ -184,6 +189,7 @@ namespace fatdog
     protected:
         LogLevel::Level m_level = LogLevel::INFO;
         std::shared_ptr<LogFormatter> m_formatter = nullptr;
+        MutexType m_mutex;
     };
 
     class StdoutLogAppender : public LogAppender
@@ -268,6 +274,7 @@ namespace fatdog
     class LoggerManager
     {
     public:
+        typedef Spinlock MutexType;
         LoggerManager();
 
         Logger::ptr getRoot() const { return m_root; }
@@ -277,19 +284,22 @@ namespace fatdog
     private:
         std::map<std::string, Logger::ptr> m_loggers;
         Logger::ptr m_root;
+        MutexType m_mutex;
     };
 
-    template<class T>
-class Singleton {
-public:
-    /**
+    template <class T>
+    class Singleton
+    {
+    public:
+        /**
      * @brief 返回单例裸指针
      */
-    static T* GetInstance() {
-        static T v;
-        return &v;
-    }
-};
+        static T *GetInstance()
+        {
+            static T v;
+            return &v;
+        }
+    };
 
 } // namespace fatdog
 

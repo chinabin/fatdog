@@ -35,7 +35,7 @@ enable_testing()
 
 # add_library(fatdog fatdog.cpp)
 add_executable(test_log tests/test_log.cpp fatdog/log.h fatdog/log.cpp fatdog/util.h fatdog/util.cpp)
-target_link_libraries(test_log yaml-cpp)
+target_link_libraries(test_log yaml-cpp pthread)
 
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
@@ -43,7 +43,7 @@ SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 
 add_executable(test_config tests/test_config.cpp fatdog/log.h fatdog/log.cpp fatdog/config.h fatdog/config.cpp fatdog/util.h fatdog/util.cpp)
-target_link_libraries(test_config yaml-cpp)
+target_link_libraries(test_config yaml-cpp pthread)
 
 add_executable(test_thread tests/test_thread.cpp fatdog/log.h fatdog/log.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp)
 target_link_libraries(test_thread pthread yaml-cpp)
