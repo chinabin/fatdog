@@ -13,7 +13,7 @@ project(fatdog
 # -Werror 把所有警告转换为错误，并在警告发生时终止编译过程
 # -Wno-unused-function 表示未使用的函数不要给出警告
 # set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -ggdb -std=c++11 -Wall -Wno-deprecated -Werror -Wno-unused-function -Wno-builtin-macro-redefined")
-set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -O3 -ggdb -std=c++11")
+set(CMAKE_CXX_FLAGS "$ENV{CXXFLAGS} -rdynamic -ggdb -std=c++11")
 
 INCLUDE_DIRECTORIES(.)
 INCLUDE_DIRECTORIES(/usr/local/include)
@@ -35,7 +35,7 @@ include(CTest)
 enable_testing()
 
 # add_library(fatdog fatdog.cpp)
-add_executable(test_log tests/test_log.cpp fatdog/log.h fatdog/log.cpp fatdog/util.h fatdog/util.cpp)
+add_executable(test_log tests/test_log.cpp fatdog/log.h fatdog/log.cpp fatdog/util.h fatdog/thread.h fatdog/thread.cpp fatdog/util.cpp fatdog/fiber.h fatdog/fiber.cpp fatdog/scheduler.h fatdog/scheduler.cpp)
 target_link_libraries(test_log yaml-cpp pthread)
 
 
@@ -43,14 +43,17 @@ SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
 
 
-add_executable(test_config tests/test_config.cpp fatdog/log.h fatdog/log.cpp fatdog/config.h fatdog/config.cpp fatdog/util.h fatdog/util.cpp)
+add_executable(test_config tests/test_config.cpp fatdog/log.h fatdog/log.cpp fatdog/config.h fatdog/config.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp  fatdog/fiber.h fatdog/fiber.cpp fatdog/scheduler.h fatdog/scheduler.cpp)
 target_link_libraries(test_config yaml-cpp pthread)
 
-add_executable(test_thread tests/test_thread.cpp fatdog/log.h fatdog/log.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp)
+add_executable(test_thread tests/test_thread.cpp fatdog/log.h fatdog/log.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp  fatdog/fiber.h fatdog/fiber.cpp fatdog/scheduler.h fatdog/scheduler.cpp)
 target_link_libraries(test_thread pthread yaml-cpp)
 
-add_executable(test_fibel tests/test_fibel.cpp fatdog/log.h fatdog/log.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp fatdog/fiber.h fatdog/fiber.cpp)
+add_executable(test_fibel tests/test_fibel.cpp fatdog/log.h fatdog/log.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp fatdog/fiber.h fatdog/fiber.cpp fatdog/scheduler.h fatdog/scheduler.cpp)
 target_link_libraries(test_fibel pthread yaml-cpp)
+
+add_executable(test_scheduler tests/test_scheduler.cpp fatdog/log.h fatdog/log.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp fatdog/fiber.h fatdog/fiber.cpp fatdog/scheduler.h fatdog/scheduler.cpp)
+target_link_libraries(test_scheduler pthread yaml-cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

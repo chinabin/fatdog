@@ -4,6 +4,7 @@
 #include <sys/syscall.h>
 
 #include "log.h"
+#include "fiber.h"
 
 namespace fatdog
 {
@@ -12,6 +13,11 @@ namespace fatdog
     pid_t GetThreadId()
     {
         return syscall(SYS_gettid);
+    }
+
+    uint32_t GetFiberId()
+    {
+        return fatdog::Fiber::GetFiberId();
     }
 
     void Backtrace(std::vector<std::string> &bt, int size, int skip)

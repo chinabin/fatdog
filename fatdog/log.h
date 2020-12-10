@@ -25,7 +25,7 @@ Logger::log 调用 LogAppender::log ，后者调用 LogFormatter::format 返回�
 
 #define FATDOG_LOG_LEVEL(logger, level) \
     if (logger->getLevel() <= level)    \
-    fatdog::LogEventWrapper(fatdog::LogEvent::ptr(new fatdog::LogEvent(logger, level, __FILE__, __LINE__, 0, fatdog::GetThreadId(), 2, time(0), "haha"))).getSS()
+    fatdog::LogEventWrapper(fatdog::LogEvent::ptr(new fatdog::LogEvent(logger, level, __FILE__, __LINE__, 0, fatdog::GetThreadId(), fatdog::GetFiberId(), time(0), "haha"))).getSS()
 
 #define FATDOG_LOG_DEBUG(logger) FATDOG_LOG_LEVEL(logger, fatdog::LogLevel::DEBUG)
 #define FATDOG_LOG_INFO(logger) FATDOG_LOG_LEVEL(logger, fatdog::LogLevel::INFO)
@@ -35,7 +35,7 @@ Logger::log 调用 LogAppender::log ，后者调用 LogFormatter::format 返回�
 
 #define FATDOG_LOG_FMT(logger, level, fmt, ...) \
     if (logger->getLevel() <= level)            \
-    fatdog::LogEventWrapper(fatdog::LogEvent::ptr(new fatdog::LogEvent(logger, level, __FILE__, __LINE__, 0, fatdog::GetThreadId(), 2, time(0), "haha"))).getEvent()->format(fmt, __VA_ARGS__)
+    fatdog::LogEventWrapper(fatdog::LogEvent::ptr(new fatdog::LogEvent(logger, level, __FILE__, __LINE__, 0, fatdog::GetThreadId(), fatdog::GetFiberId(), time(0), "haha"))).getEvent()->format(fmt, __VA_ARGS__)
 
 #define FATDOG_LOG_FMT_DEBUG(logger, fmt, ...) FATDOG_LOG_FMT(logger, fatdog::LogLevel::DEBUG, fmt, __VA_ARGS__)
 #define FATDOG_LOG_FMT_INFO(logger, fmt, ...) FATDOG_LOG_FMT(logger, fatdog::LogLevel::INFO, fmt, __VA_ARGS__)

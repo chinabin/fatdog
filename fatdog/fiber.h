@@ -21,7 +21,7 @@ namespace fatdog
         };
 
         typedef std::shared_ptr<Fiber> ptr;
-        Fiber(std::function<void(void)>, size_t stacksize = 1024 * 1024);
+        Fiber(std::function<void(void)>, size_t stacksize = 1024 * 1024, bool use_caller = false);
         ~Fiber();
 
     public:
@@ -31,6 +31,10 @@ namespace fatdog
 
         uint64_t getId() const { return m_id; }
         State getState() const { return m_state; }
+        void setState(const State &s) { m_state = s; }
+
+        void call();
+        void back();
 
     public:
         static void SetThis(Fiber *f);
@@ -40,6 +44,7 @@ namespace fatdog
         static uint64_t TotalFibers();
 
         static void MainFunc();
+        static void CallerMainFunc();
         static uint64_t GetFiberId();
 
     private:
