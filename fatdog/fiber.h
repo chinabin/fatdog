@@ -26,6 +26,8 @@ namespace fatdog
 
     public:
         void reset(std::function<void(void)>);
+
+        // deal with scheduler's main fiber
         void swapIn();
         void swapOut();
 
@@ -33,6 +35,7 @@ namespace fatdog
         State getState() const { return m_state; }
         void setState(const State &s) { m_state = s; }
 
+        // deal with thread's main fiber
         void call();
         void back();
 
@@ -50,6 +53,7 @@ namespace fatdog
     private:
         Fiber();
 
+    private:
         uint64_t m_id = 0;
         uint32_t m_stacksize = 0;
         State m_state = INIT;

@@ -68,6 +68,15 @@ namespace fatdog
         return t_thread_name;
     }
 
+    void Thread::SetName(const std::string &name)
+    {
+        if (t_thread)
+        {
+            t_thread->m_name = name;
+        }
+        t_thread_name = name;
+    }
+
     void Thread::join()
     {
         if (m_thread)

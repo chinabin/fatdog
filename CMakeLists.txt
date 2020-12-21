@@ -20,40 +20,58 @@ INCLUDE_DIRECTORIES(/usr/local/include)
 
 LINK_DIRECTORIES(/usr/local/lib)
 
-SET(LIB_SRC
-    fatdog/log.cpp
-    fatdog/config.cpp)
-
-# add_library 将目录中的源文件生成链接库
-ADD_LIBRARY(fatdog SHARED ${LIB_SRC})
-
 find_package(yaml-cpp REQUIRED)
-
 find_package(Boost REQUIRED)
 
 include(CTest)
 enable_testing()
 
-# add_library(fatdog fatdog.cpp)
-add_executable(test_log tests/test_log.cpp fatdog/log.h fatdog/log.cpp fatdog/util.h fatdog/thread.h fatdog/thread.cpp fatdog/util.cpp fatdog/fiber.h fatdog/fiber.cpp fatdog/scheduler.h fatdog/scheduler.cpp)
-target_link_libraries(test_log yaml-cpp pthread)
+set(LIB_SRC
+    fatdog/macro.h
+    fatdog/log.h
+    fatdog/log.cpp
+    fatdog/config.h
+    fatdog/config.cpp
+    fatdog/util.h
+    fatdog/thread.h
+    fatdog/thread.cpp
+    fatdog/util.cpp
+    fatdog/fiber.h
+    fatdog/fiber.cpp
+    fatdog/scheduler.h
+    fatdog/scheduler.cpp
+    fatdog/iomanager.h
+    fatdog/iomanager.cpp
+    )
 
+set(LIBS
+        pthread
+        yaml-cpp)
+
+# add_library 将目录中的源文件生成链接库
+ADD_LIBRARY(fatdog SHARED ${LIB_SRC})
+
+# add_library(fatdog fatdog.cpp)
+add_executable(test_log tests/test_log.cpp ${LIB_SRC})
+target_link_libraries(test_log ${LIBS})
+
+add_executable(test_config tests/test_config.cpp ${LIB_SRC})
+target_link_libraries(test_config ${LIBS})
+
+add_executable(test_thread tests/test_thread.cpp ${LIB_SRC})
+target_link_libraries(test_thread ${LIBS})
+
+add_executable(test_fibel tests/test_fibel.cpp ${LIB_SRC})
+target_link_libraries(test_fibel ${LIBS})
+
+add_executable(test_scheduler tests/test_scheduler.cpp ${LIB_SRC})
+target_link_libraries(test_scheduler ${LIBS})
+
+add_executable(test_iomanager tests/test_iomanager.cpp ${LIB_SRC})
+target_link_libraries(test_iomanager ${LIBS})
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
-
-
-add_executable(test_config tests/test_config.cpp fatdog/log.h fatdog/log.cpp fatdog/config.h fatdog/config.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp  fatdog/fiber.h fatdog/fiber.cpp fatdog/scheduler.h fatdog/scheduler.cpp)
-target_link_libraries(test_config yaml-cpp pthread)
-
-add_executable(test_thread tests/test_thread.cpp fatdog/log.h fatdog/log.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp  fatdog/fiber.h fatdog/fiber.cpp fatdog/scheduler.h fatdog/scheduler.cpp)
-target_link_libraries(test_thread pthread yaml-cpp)
-
-add_executable(test_fibel tests/test_fibel.cpp fatdog/log.h fatdog/log.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp fatdog/fiber.h fatdog/fiber.cpp fatdog/scheduler.h fatdog/scheduler.cpp)
-target_link_libraries(test_fibel pthread yaml-cpp)
-
-add_executable(test_scheduler tests/test_scheduler.cpp fatdog/log.h fatdog/log.cpp fatdog/thread.h fatdog/thread.cpp fatdog/util.h fatdog/util.cpp fatdog/fiber.h fatdog/fiber.cpp fatdog/scheduler.h fatdog/scheduler.cpp)
-target_link_libraries(test_scheduler pthread yaml-cpp)
 
 set(CPACK_PROJECT_NAME ${PROJECT_NAME})
 set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})

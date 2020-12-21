@@ -130,9 +130,9 @@ int main()
 {
     // test_backtrace();
     // test_ucontext1();
-    // test_ucontext2();
+     test_ucontext2();
 
-    thread_run();
+    // thread_run();
 
     return 0;
 }

@@ -312,6 +312,7 @@ namespace fatdog
 
         static Thread *GetThis();
         static const std::string &GetName();
+        static void SetName(const std::string& name);
 
     private:
         std::string m_name;

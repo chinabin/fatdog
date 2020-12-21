@@ -2,6 +2,7 @@
 
 #include <unistd.h>
 #include <sys/syscall.h>
+#include <sys/time.h>
 
 #include "log.h"
 #include "fiber.h"
@@ -52,4 +53,21 @@ namespace fatdog
         }
         return ss.str();
     }
+
+uint64_t GetCurrentMS()
+{
+    timeval tm;
+    gettimeofday(&tm, nullptr);
+
+    return tm.tv_sec * 1000 + tm.tv_usec / 1000;
+}
+
+uint64_t GetCurrentUS()
+{
+    timeval tm;
+    gettimeofday(&tm, nullptr);
+
+    return tm.tv_sec * 1000 * 1000 + tm.tv_usec;
+}
+
 } // namespace fatdog
