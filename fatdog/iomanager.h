@@ -2,10 +2,11 @@
 #define __FATDOG_IOMANAGER_H__
 
 #include "scheduler.h"
+#include "timer.h"
 
 namespace fatdog
 {
-    class IOManager : public Scheduler
+    class IOManager : public Scheduler, public TimerManager
     {
     public:
         typedef std::shared_ptr<IOManager> ptr;
@@ -30,7 +31,11 @@ namespace fatdog
         void contextResize(size_t size);
 
     protected:
-        virtual void idle() override;
+        void tickle() override;
+        bool stopping() override;
+        void idle() override;
+        void onTimerInsertedAtFront() override;
+        bool stopping(uint64_t &timeout);
 
     private:
         /*
@@ -61,7 +66,7 @@ namespace fatdog
     private:
         int m_epfd = 0;
         int m_tickleFds[2]; // 管道，0 读 1 写
-
+        std::atomic<size_t> m_pendingEventCount = {0};
         std::vector<FdContext *> m_fdContexts;
     };
 } // namespace fatdog

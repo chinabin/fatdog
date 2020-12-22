@@ -42,6 +42,8 @@ set(LIB_SRC
     fatdog/scheduler.cpp
     fatdog/iomanager.h
     fatdog/iomanager.cpp
+    fatdog/timer.h
+    fatdog/timer.cpp
     )
 
 set(LIBS

@@ -56,19 +56,27 @@ namespace fatdog
         template <class FiberOrCb>
         void schedule(FiberOrCb f, int thread = -1)
         {
+            bool need_tickle = m_fibers.empty();
+
             FiberAndThread ft(f, thread);
             if (ft.fiber || ft.cb)
             {
                 m_fibers.push_back({f, thread});
             }
+
+            if (need_tickle)
+            {
+                tickle();
+            }
         }
 
         template <class InputIterator>
-        void scheduler(InputIterator begin, InputIterator end)
+        void schedule(InputIterator begin, InputIterator end)
         {
             while (begin != end)
             {
-                scheduler(&*begin, -1);
+                schedule(*begin, -1);
+                ++begin;
             }
         }
 
@@ -104,17 +112,21 @@ namespace fatdog
         };
 
     protected:
+        virtual void tickle();
         void run();
         void setThis();
         virtual void idle();
-        virtual bool stopping();    // indicate if can stop
+        virtual bool stopping(); // indicate if can stop
+
+        bool hasIdleThreads() { return m_idleThreadCount > 0; }
 
     protected:
         size_t m_threadCount = 0;
-        int m_rootThread = 0;       // use_caller's thread id
+        int m_rootThread = 0; // use_caller's thread id
         bool m_stopping = true;
         std::atomic<size_t> m_activeThreadCount = {0};
         std::atomic<size_t> m_idleThreadCount = {0};
+
     private:
         std::string m_name;
         Fiber::ptr m_rootFiber;

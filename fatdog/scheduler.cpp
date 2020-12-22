@@ -91,6 +91,16 @@ namespace fatdog
             FATDOG_ASSERT(GetThis() != this);
         }
 
+        for (size_t i = 0; i < m_threadCount; ++i)
+        {
+            tickle();
+        }
+
+        if (m_rootFiber)
+        {
+            tickle();
+        }
+
         // can't put this code in start(), because if you do that, once you call start(), you can't
         // call scheduler() to add function or fiber until start() return(because m_rootFiber->call() will go
         // into run() function), and after start() return which means run() end. now you add anything is meaningless.
@@ -146,6 +156,7 @@ namespace fatdog
         {
             ft.reset();
             bool is_active = false;
+            bool tickle_me = false;
             {
                 auto it = m_fibers.begin();
                 while (it != m_fibers.end())
@@ -153,6 +164,7 @@ namespace fatdog
                     if (it->thread != -1 && it->thread != fatdog::GetThreadId())
                     {
                         ++it;
+                        tickle_me = true;
                         continue;
                     }
 
@@ -168,6 +180,11 @@ namespace fatdog
                     is_active = true;
                     break;
                 }
+            }
+
+            if (tickle_me)
+            {
+                tickle();
             }
 
             if (ft.fiber && ft.fiber->getState() != Fiber::TERM && ft.fiber->getState() != Fiber::EXCEPT)
@@ -241,6 +258,11 @@ namespace fatdog
     bool Scheduler::stopping()
     {
         return m_stopping && m_fibers.empty() && m_activeThreadCount == 0;
+    }
+
+    void Scheduler::tickle()
+    {
+        FATDOG_LOG_INFO(g_logger) << "tickle";
     }
 
     void Scheduler::idle()

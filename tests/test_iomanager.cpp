@@ -1,5 +1,6 @@
 #include "../fatdog/iomanager.h"
 #include "../fatdog/log.h"
+#include "../fatdog/macro.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -56,7 +57,27 @@ void test1() {
     iom.schedule(&test_fiber);
 }
 
+fatdog::TimerManager::Timer::ptr s_timer;
+void test_timer() {
+    fatdog::IOManager iom("lala", 1);
+    s_timer = iom.addTimer(1000, [](){
+        static int i = 0;
+        FATDOG_LOG_INFO(g_logger) << "hello timer i=" << i;
+        if(++i == 3) {
+            s_timer->reset(2000, true);
+            //s_timer->cancel();
+        }
+        if(i >= 10)
+        {
+            s_timer->cancel();
+        }
+    }, true);
+}
+
 int main(int argc, char** argv) {
-    test1();
+    FATDOG_LOG_INFO(g_logger) << "let's start";
+    // test1();
+    test_timer();
+    FATDOG_LOG_INFO(g_logger) << "let's end";
     return 0;
 }
