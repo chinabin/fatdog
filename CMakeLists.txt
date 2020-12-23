@@ -28,6 +28,8 @@ enable_testing()
 
 set(LIB_SRC
     fatdog/macro.h
+    fatdog/singleton.h
+    fatdog/noncopyable.h
     fatdog/log.h
     fatdog/log.cpp
     fatdog/config.h
@@ -44,11 +46,23 @@ set(LIB_SRC
     fatdog/iomanager.cpp
     fatdog/timer.h
     fatdog/timer.cpp
+    fatdog/endian.h
+    fatdog/address.h
+    fatdog/address.cpp
+    fatdog/fd_manager.h
+    fatdog/fd_manager.cpp
+    fatdog/hook.h
+    fatdog/hook.cpp
+    fatdog/bytearray.h
+    fatdog/bytearray.cpp
+    fatdog/socket.h
+    fatdog/socket.cpp
     )
 
 set(LIBS
         pthread
-        yaml-cpp)
+        yaml-cpp
+        dl)
 
 # add_library 将目录中的源文件生成链接库
 ADD_LIBRARY(fatdog SHARED ${LIB_SRC})
@@ -71,6 +85,21 @@ target_link_libraries(test_scheduler ${LIBS})
 
 add_executable(test_iomanager tests/test_iomanager.cpp ${LIB_SRC})
 target_link_libraries(test_iomanager ${LIBS})
+
+add_executable(test_address tests/test_address.cpp ${LIB_SRC})
+target_link_libraries(test_address ${LIBS})
+
+add_executable(test_sleep tests/test_sleep.cpp)
+target_link_libraries(test_sleep dl)
+
+add_executable(test_hook tests/test_hook.cpp ${LIB_SRC})
+target_link_libraries(test_hook ${LIBS})
+
+add_executable(test_bytearray tests/test_bytearray.cpp ${LIB_SRC})
+target_link_libraries(test_bytearray ${LIBS})
+
+add_executable(test_socket tests/test_socket.cpp ${LIB_SRC})
+target_link_libraries(test_socket ${LIBS})
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)

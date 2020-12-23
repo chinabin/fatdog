@@ -12,6 +12,7 @@
 
 #include "util.h"
 #include "thread.h"
+#include "singleton.h"
 
 /*
 Logger: 负责产生日志信息，接收端
@@ -285,20 +286,6 @@ namespace fatdog
         std::map<std::string, Logger::ptr> m_loggers;
         Logger::ptr m_root;
         MutexType m_mutex;
-    };
-
-    template <class T>
-    class Singleton
-    {
-    public:
-        /**
-     * @brief 返回单例裸指针
-     */
-        static T *GetInstance()
-        {
-            static T v;
-            return &v;
-        }
     };
 
 } // namespace fatdog

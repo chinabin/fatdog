@@ -3,7 +3,7 @@
 #include <vector>
 #include <unistd.h>
 
-fatdog::Logger::ptr g_logger = FATDOG_LOG_ROOT();
+static fatdog::Logger::ptr g_logger = FATDOG_LOG_ROOT();
 
 int count = 0;
 // fatdog::RWMutex s_mutex;

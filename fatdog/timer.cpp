@@ -116,6 +116,20 @@ namespace fatdog
         return timer;
     }
 
+    static void OnTimer(std::weak_ptr<void> weak_cond, std::function<void()> cb)
+    {
+        std::shared_ptr<void> tmp = weak_cond.lock();
+        if (tmp)
+        {
+            cb();
+        }
+    }
+
+    TimerManager::Timer::ptr TimerManager::addConditionTimer(uint64_t ms, std::function<void()> cb, std::weak_ptr<void> weak_cond, bool recurring)
+    {
+        return addTimer(ms, std::bind(&OnTimer, weak_cond, cb), recurring);
+    }
+
     uint64_t TimerManager::getNextTimer()
     {
         m_tickled = false;

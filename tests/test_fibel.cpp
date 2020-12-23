@@ -8,7 +8,7 @@
 #include <ucontext.h>
 #include <unistd.h>
 
-fatdog::Logger::ptr g_logger = FATDOG_LOG_ROOT();
+static fatdog::Logger::ptr g_logger = FATDOG_LOG_ROOT();
 
 void run_in_fiber() {
     FATDOG_LOG_INFO(g_logger) << "run_in_fiber begin";

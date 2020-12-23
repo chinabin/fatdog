@@ -22,10 +22,10 @@ namespace fatdog
             bool refresh();
             bool reset(uint64_t ms, bool from_now);
 
-            uint64_t& getNext() { return m_next; }
-            uint64_t& getMs() { return m_ms; }
+            uint64_t &getNext() { return m_next; }
+            uint64_t &getMs() { return m_ms; }
             bool getRecurring() const { return m_recurring; }
-            std::function<void()>& getF() { return m_cb; }
+            std::function<void()> &getF() { return m_cb; }
 
             // 仿函数，为了 set
             struct Comparator
@@ -46,6 +46,7 @@ namespace fatdog
         virtual ~TimerManager();
 
         Timer::ptr addTimer(uint64_t ms, std::function<void()> cb, bool recurring = false);
+        Timer::ptr addConditionTimer(uint64_t ms, std::function<void()> cb, std::weak_ptr<void> weak_cond, bool recurring = false);
         uint64_t getNextTimer();
         void listExpiredCb(std::vector<std::function<void()>> &cbs);
         bool hasTimer();

@@ -11,7 +11,7 @@
 #include <sys/epoll.h>
 #include <string.h>
 
-fatdog::Logger::ptr g_logger = FATDOG_LOG_ROOT();
+static fatdog::Logger::ptr g_logger = FATDOG_LOG_ROOT();
 
 int sock = 0;
 

@@ -2,6 +2,7 @@
 #include "log.h"
 #include "macro.h"
 #include "thread.h"
+#include "hook.h"
 
 namespace fatdog
 {
@@ -141,6 +142,7 @@ namespace fatdog
     void Scheduler::run()
     {
         FATDOG_LOG_INFO(g_logger) << "Scheduler::run";
+        set_hook_enable(true);
         setThis();
         if (fatdog::GetThreadId() != m_rootThread)
         {
