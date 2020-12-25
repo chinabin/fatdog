@@ -2,6 +2,9 @@
 #define __FATDOG_SOCKET_H__
 
 #include <memory>
+#include <netinet/tcp.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 #include "address.h"
 #include "noncopyable.h"
 
@@ -45,15 +48,15 @@ namespace fatdog
         int64_t getRecvTimeout();
         void setRecvTimeout(int64_t v);
 
-        bool getOption(int level, int option, void *result, size_t *len);
+        bool getOption(int level, int option, void *result, socklen_t *len);
         template <class T>
         bool getOption(int level, int option, T &result)
         {
-            size_t length = sizeof(T);
+            socklen_t length = sizeof(T);
             return getOption(level, option, &result, &length);
         }
 
-        bool setOption(int level, int option, const void *result, size_t len);
+        bool setOption(int level, int option, const void *result, socklen_t len);
         template <class T>
         bool setOption(int level, int option, const T &value)
         {
@@ -111,6 +114,8 @@ namespace fatdog
         Address::ptr m_localAddress;
         Address::ptr m_remoteAddress;
     };
+
+    std::ostream &operator<<(std::ostream &os, const Socket &addr);
 
 } // namespace fatdog
 

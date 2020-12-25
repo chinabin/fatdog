@@ -7,6 +7,7 @@
 #include "fiber.h"
 #include "iomanager.h"
 #include "fd_manager.h"
+#include "macro.h"
 
 static fatdog::Logger::ptr g_logger = FATDOG_LOG_ROOT();
 
@@ -130,7 +131,7 @@ retry:
         fatdog::TimerManager::Timer::ptr timer;
         std::weak_ptr<timer_info> winfo(tinfo);
 
-        if (to != (uint64_t)-1)     // 表示有设置超时时间
+        if (to != (uint64_t)-1) // 表示有设置超时时间
         {
             timer = iom->addConditionTimer(
                 to, [winfo, fd, iom, event]() {
@@ -197,7 +198,7 @@ extern "C"
          * https://mdzahidh.wordpress.com/2008/07/16/pointer-to-c-class-methods-or-should-you-call-em-method-pointers/
          * https://stackoverflow.com/questions/9939305/what-is-in-c
         */
-       // 如果不是因为 schedule 重载了，其实 iom->addTimer(seconds * 1000, std::bind(&fatdog::IOManager::schedule<fatdog::Fiber::ptr>, iom, fiber, -1)); 也可以
+        // 如果不是因为 schedule 重载了，其实 iom->addTimer(seconds * 1000, std::bind(&fatdog::IOManager::schedule<fatdog::Fiber::ptr>, iom, fiber, -1)); 也可以
         iom->addTimer(seconds * 1000, std::bind((void (fatdog::Scheduler::*)(fatdog::Fiber::ptr, int thread)) & fatdog::IOManager::schedule, iom, fiber, -1));
         fatdog::Fiber::YieldToHold();
         return 0;
@@ -477,7 +478,9 @@ extern "C"
         case F_SETSIG:
         case F_SETLEASE:
         case F_NOTIFY:
+#ifdef F_SETPIPE_SZ
         case F_SETPIPE_SZ:
+#endif
         {
             int arg = va_arg(va, int);
             va_end(va);
@@ -488,7 +491,9 @@ extern "C"
         case F_GETOWN:
         case F_GETSIG:
         case F_GETLEASE:
+#ifdef F_GETPIPE_SZ
         case F_GETPIPE_SZ:
+#endif
         {
             va_end(va);
             return fcntl_f(fd, cmd);

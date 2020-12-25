@@ -138,7 +138,7 @@ namespace fatdog
         else
         {
             event_ctx.fiber = Fiber::GetThis();
-            FATDOG_ASSERT(event_ctx.fiber->getState() == Fiber::EXEC);
+            FATDOG_ASSERT2(event_ctx.fiber->getState() == Fiber::EXEC, "state=" << event_ctx.fiber->getState());
         }
         return 0;
     }
@@ -309,7 +309,7 @@ namespace fatdog
                                           << " idle stopping exit";
                 break;
             }
- 
+
             int rt = 0;
             do
             {

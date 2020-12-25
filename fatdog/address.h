@@ -45,7 +45,7 @@ namespace fatdog
         virtual socklen_t getAddrLen() const = 0;
 
         virtual std::ostream &insert(std::ostream &os) const = 0;
-        std::string toString();
+        std::string toString() const;
 
         bool operator<(const Address &rhs) const;
         bool operator==(const Address &rhs) const;
@@ -131,6 +131,8 @@ namespace fatdog
     private:
         sockaddr m_addr;
     };
+
+    std::ostream &operator<<(std::ostream &os, const Address &addr);
 
 } // namespace fatdog
 

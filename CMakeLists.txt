@@ -26,6 +26,31 @@ find_package(Boost REQUIRED)
 include(CTest)
 enable_testing()
 
+
+function(ragelmaker src_rl outputlist outputdir)
+    #Create a custom build step that will call ragel on the provided src_rl file.
+    #The output .cpp file will be appended to the variable name passed in outputlist.
+
+    get_filename_component(src_file ${src_rl} NAME_WE)
+
+    set(rl_out ${outputdir}/${src_file}.rl.cc)
+
+    #adding to the list inside a function takes special care, we cannot use list(APPEND...)
+    #because the results are local scope only
+    set(${outputlist} ${${outputlist}} ${rl_out} PARENT_SCOPE)
+
+    #Warning: The " -S -M -l -C -T0  --error-format=msvc" are added to match existing window invocation
+    #we might want something different for mac and linux
+    add_custom_command(
+        OUTPUT ${rl_out}
+        COMMAND cd ${outputdir}
+        COMMAND ragel ${CMAKE_CURRENT_SOURCE_DIR}/${src_rl} -o ${rl_out} -l -C -G2  --error-format=msvc
+        DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/${src_rl}
+        )
+    set_source_files_properties(${rl_out} PROPERTIES GENERATED TRUE)
+endfunction(ragelmaker)
+
+
 set(LIB_SRC
     fatdog/macro.h
     fatdog/singleton.h
@@ -57,12 +82,32 @@ set(LIB_SRC
     fatdog/bytearray.cpp
     fatdog/socket.h
     fatdog/socket.cpp
+    fatdog/http/http.h
+    fatdog/http/http.cpp
+    fatdog/http/http_parser.h
+    fatdog/http/http_parser.cpp
+    fatdog/tcp_server.h
+    fatdog/tcp_server.cpp
+    fatdog/socket_stream.h
+    fatdog/socket_stream.cpp
+    fatdog/stream.h
+    fatdog/stream.cpp
+    fatdog/http/http_session.h
+    fatdog/http/http_session.cpp
+    fatdog/http/http_server.h
+    fatdog/http/http_server.cpp
+    fatdog/http/servlet.h
+    fatdog/http/servlet.cpp
     )
 
 set(LIBS
         pthread
         yaml-cpp
         dl)
+
+ragelmaker(fatdog/http/http11_parser.rl LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/fatdog/http)
+ragelmaker(fatdog/http/httpclient_parser.rl LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/fatdog/http)
+ragelmaker(fatdog/uri.rl LIB_SRC ${CMAKE_CURRENT_SOURCE_DIR}/fatdog)
 
 # add_library 将目录中的源文件生成链接库
 ADD_LIBRARY(fatdog SHARED ${LIB_SRC})
@@ -100,6 +145,24 @@ target_link_libraries(test_bytearray ${LIBS})
 
 add_executable(test_socket tests/test_socket.cpp ${LIB_SRC})
 target_link_libraries(test_socket ${LIBS})
+
+add_executable(test_http tests/test_http.cpp ${LIB_SRC})
+target_link_libraries(test_http ${LIBS})
+
+add_executable(test_http_parser tests/test_http_parser.cpp ${LIB_SRC})
+target_link_libraries(test_http_parser ${LIBS})
+
+add_executable(test_tcp_server tests/test_tcp_server.cpp ${LIB_SRC})
+target_link_libraries(test_tcp_server ${LIBS})
+
+add_executable(echo_server examples/echo_server.cpp ${LIB_SRC})
+target_link_libraries(echo_server ${LIBS})
+
+add_executable(test_http_server tests/test_http_server.cpp ${LIB_SRC})
+target_link_libraries(test_http_server ${LIBS})
+
+add_executable(test_uri tests/test_uri.cpp ${LIB_SRC})
+target_link_libraries(test_uri ${LIBS})
 
 SET(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
 SET(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)

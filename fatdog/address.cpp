@@ -3,7 +3,7 @@
 #include <sstream>
 #include <netdb.h>
 #include <ifaddrs.h>
-
+#include <stddef.h>
 #include "endian.h"
 
 namespace fatdog
@@ -45,10 +45,10 @@ namespace fatdog
         std::vector<Address::ptr> result;
         if (Lookup(result, host, family, type, protocol))
         {
-            for (auto &i : result)
-            {
-                std::cout << i->toString() << std::endl;
-            }
+            // for (auto &i : result)
+            // {
+            //     std::cout << i->toString() << std::endl;
+            // }
             for (auto &i : result)
             {
                 IPAddress::ptr v = std::dynamic_pointer_cast<IPAddress>(i);
@@ -97,7 +97,7 @@ namespace fatdog
         {
             FATDOG_LOG_ERROR(g_logger) << "Address::Lookup getaddress(" << host << ", "
                                        << family << ", " << type << ") err=" << error << " errstr="
-                                       << strerror(errno);
+                                       << gai_strerror(errno);
             return false;
         }
 
@@ -195,7 +195,7 @@ namespace fatdog
         return getAddr()->sa_family;
     }
 
-    std::string Address::toString()
+    std::string Address::toString() const
     {
         std::stringstream ss;
         insert(ss);
@@ -471,6 +471,11 @@ namespace fatdog
     {
         os << "[UnknownAddress family=" << m_addr.sa_family << "]";
         return os;
+    }
+
+    std::ostream &operator<<(std::ostream &os, const Address &addr)
+    {
+        return addr.insert(os);
     }
 
 } // namespace fatdog
