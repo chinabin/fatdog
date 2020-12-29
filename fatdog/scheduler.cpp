@@ -2,7 +2,7 @@
 #include "log.h"
 #include "macro.h"
 #include "thread.h"
-#include "hook.h"
+// #include "hook.h"
 
 namespace fatdog
 {
@@ -22,7 +22,7 @@ namespace fatdog
             --threads;
 
             t_scheduler = this;
-            m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this), 1024 * 1024, true));
+            m_rootFiber.reset(new Fiber(std::bind(&Scheduler::run, this), 1024 * 1024, use_caller));
             t_main_fiber = m_rootFiber.get();
             m_rootThread = fatdog::GetThreadId();
         }
@@ -32,6 +32,7 @@ namespace fatdog
         }
 
         m_threadCount = threads;
+        FATDOG_LOG_INFO(g_logger) << "new Scheduler: name=" << name << " threads=" << threads << " use_caller=" << use_caller;
     }
 
     Scheduler::~Scheduler()
@@ -71,9 +72,9 @@ namespace fatdog
         // already stopped or didn't start yet
         if (m_rootFiber && m_threadCount == 0 && (m_rootFiber->getState() == Fiber::TERM || m_rootFiber->getState() == Fiber::INIT))
         {
-            FATDOG_LOG_INFO(g_logger) << this << " stopped";
-            if (stopping()) // why?
+            if (stopping()) // 检查是否已经停止了，如果是，则直接返回
             {
+                FATDOG_LOG_INFO(g_logger) << "already stopped, baby~";
                 return;
             }
         }
@@ -107,7 +108,7 @@ namespace fatdog
         // into run() function), and after start() return which means run() end. now you add anything is meaningless.
         if (m_rootFiber)
         {
-            if (!stopping()) // why?
+            if (!stopping())
             {
                 m_rootFiber->call();
             }
@@ -142,7 +143,7 @@ namespace fatdog
     void Scheduler::run()
     {
         FATDOG_LOG_INFO(g_logger) << "Scheduler::run";
-        set_hook_enable(true);
+        // set_hook_enable(true);
         setThis();
         if (fatdog::GetThreadId() != m_rootThread)
         {
@@ -236,12 +237,15 @@ namespace fatdog
             {
                 if (is_active)
                 {
+                    FATDOG_ASSERT(0);
+                    FATDOG_LOG_INFO(g_logger) << "lalalal~~~~~~~~" << ft.fiber->getState();
                     --m_activeThreadCount;
                     continue;
                 }
                 if (idle_fiber->getState() == Fiber::TERM)
                 {
                     FATDOG_LOG_INFO(g_logger) << "idle fiber term";
+                    idle_fiber.reset();
                     break;
                 }
 
@@ -264,7 +268,7 @@ namespace fatdog
 
     void Scheduler::tickle()
     {
-        FATDOG_LOG_INFO(g_logger) << "tickle";
+        // FATDOG_LOG_INFO(g_logger) << "tickle";
     }
 
     void Scheduler::idle()

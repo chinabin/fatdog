@@ -258,10 +258,11 @@ namespace fatdog
 
     void IOManager::tickle()
     {
-        if (hasIdleThreads())
+        if (!hasIdleThreads())
         {
             return;
         }
+        FATDOG_LOG_INFO(g_logger) << "IOManager::tickle";
         int rt = write(m_tickleFds[1], "T", 1);
         FATDOG_ASSERT(rt == 1);
     }
@@ -319,6 +320,7 @@ namespace fatdog
                     next_timeout = (int)next_timeout > MAX_TIMEOUT
                                        ? MAX_TIMEOUT
                                        : next_timeout;
+                                       FATDOG_LOG_INFO(g_logger) << "sleep " << next_timeout << ", baby";
                 }
                 else
                 {
@@ -330,6 +332,7 @@ namespace fatdog
                 }
                 else
                 {
+                    FATDOG_LOG_INFO(g_logger) << "I'm wake, " << rt;
                     break;
                 }
             } while (true);
@@ -347,6 +350,7 @@ namespace fatdog
                 epoll_event &event = events[i];
                 if (event.data.fd == m_tickleFds[0])
                 {
+                    FATDOG_LOG_INFO(g_logger) << "wake by pip";
                     uint8_t dummy;
                     while (read(m_tickleFds[0], &dummy, 1) == 1)
                         ;

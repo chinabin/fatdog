@@ -115,8 +115,8 @@ namespace fatdog
         virtual void tickle();
         void run();
         void setThis();
-        virtual void idle();
-        virtual bool stopping(); // indicate if can stop
+        virtual void idle();     // indicate something happend, threads should wake up to deal with
+        virtual bool stopping(); // indicate if can stop or is stopping
 
         bool hasIdleThreads() { return m_idleThreadCount > 0; }
 
@@ -125,7 +125,7 @@ namespace fatdog
         int m_rootThread = 0; // use_caller's thread id
         bool m_stopping = true;
         std::atomic<size_t> m_activeThreadCount = {0};
-        std::atomic<size_t> m_idleThreadCount = {0};
+        std::atomic<size_t> m_idleThreadCount = {0};    // 正在执行 idle 函数的线程数目
 
     private:
         std::string m_name;

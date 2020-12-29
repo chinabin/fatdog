@@ -6,6 +6,8 @@
 
 #include <atomic>
 
+#define FIBER_DEBUG
+
 namespace fatdog
 {
     static Logger::ptr g_logger = FATDOG_LOG_ROOT();
@@ -32,6 +34,9 @@ namespace fatdog
 
     using StackAllocator = StackMalloc;
 
+    /*
+     * 调用 makecontext 和 getcontext 的时候需要确保自己在正确的线程，不然得到的context会让你炸裂
+    */
     Fiber::Fiber()
     {
         m_state = EXEC;
@@ -88,6 +93,7 @@ namespace fatdog
             FATDOG_ASSERT(!m_cb);
             FATDOG_ASSERT(m_state == EXEC);
 
+            t_threadFiber = nullptr;
             Fiber *cur = t_fiber;
             if (cur == this)
             {
@@ -109,50 +115,56 @@ namespace fatdog
 
     void Fiber::call()
     {
-        // FATDOG_LOG_INFO(g_logger) << "from " << GetThis()->getId() << " call to " << getId() << ", current context keep in thread's main fiber";
+#ifdef FIBER_DEBUG
+        FATDOG_LOG_INFO(g_logger) << "from " << GetThis()->getId() << " call to " << getId();
+#endif
         SetThis(this);
         m_state = EXEC;
         if (swapcontext(&(t_threadFiber->m_ctx), &m_ctx))
         {
             FATDOG_ASSERT2(false, "swapcontext");
         }
-        // FATDOG_LOG_INFO(g_logger) << "call bye " << getId();
     }
 
     void Fiber::back()
     {
-        // FATDOG_LOG_INFO(g_logger) << "from " << GetThis()->getId() << " back to " << t_threadFiber->getId() << ", go to thread's main fiber context";
+#ifdef FIBER_DEBUG
+        FATDOG_LOG_INFO(g_logger) << "from " << GetThis()->getId() << " back to " << t_threadFiber->getId();
+#endif
         SetThis(t_threadFiber.get());
         if (swapcontext(&m_ctx, &t_threadFiber->m_ctx))
         {
             FATDOG_ASSERT2(false, "swapcontext");
         }
-        // FATDOG_LOG_INFO(g_logger) << "back bye " << getId();
     }
 
     void Fiber::swapIn()
     {
-        // FATDOG_LOG_INFO(g_logger) << "from " << GetThis()->getId() << " swap in to " << getId() << ", current context keep in Scheduler's main fiber";
+#ifdef FIBER_DEBUG
+        FATDOG_LOG_INFO(g_logger) << "from " << GetThis()->getId() << " swap in to " << getId();
+#endif
         SetThis(this);
+        FATDOG_ASSERT2(Scheduler::GetMainFiber() != nullptr, "Scheduler::GetMainFiber() is null");
         FATDOG_ASSERT(m_state != EXEC);
         m_state = EXEC;
         if (swapcontext(&Scheduler::GetMainFiber()->m_ctx, &m_ctx))
         {
             FATDOG_ASSERT2(false, "swapcontext");
         }
-        // FATDOG_LOG_INFO(g_logger) << "swapIn bye " << getId();
     }
 
     void Fiber::swapOut()
     {
-        // FATDOG_LOG_INFO(g_logger) << "from " << GetThis()->getId() << " swap out to " << Scheduler::GetMainFiber()->getId() << ", go to Scheduler's main fiber context";
+#ifdef FIBER_DEBUG
+        FATDOG_LOG_INFO(g_logger) << "from " << GetThis()->getId() << " swap out to " << Scheduler::GetMainFiber()->getId();
+#endif
+        FATDOG_ASSERT2(Scheduler::GetMainFiber() != nullptr, "Scheduler::GetMainFiber() is null");
         SetThis(Scheduler::GetMainFiber());
 
         if (swapcontext(&m_ctx, &Scheduler::GetMainFiber()->m_ctx))
         {
             FATDOG_ASSERT2(false, "swapcontext");
         }
-        // FATDOG_LOG_INFO(g_logger) << "swapOut bye " << getId();
     }
 
     void Fiber::reset(std::function<void(void)> cb)
@@ -187,6 +199,7 @@ namespace fatdog
         }
         Fiber::ptr main_fiber(new Fiber);
         FATDOG_ASSERT(t_fiber == main_fiber.get());
+        FATDOG_ASSERT(t_threadFiber == nullptr);
         t_threadFiber = main_fiber;
         return t_fiber->shared_from_this();
     }
@@ -218,7 +231,9 @@ namespace fatdog
         FATDOG_ASSERT(cur);
         try
         {
-            // FATDOG_LOG_INFO(g_logger) << "Fiber::MainFunc: " << cur->getId();
+#ifdef FIBER_DEBUG
+            FATDOG_LOG_INFO(g_logger) << "Fiber::MainFunc: " << cur->getId();
+#endif
             cur->m_cb();
             cur->m_cb = nullptr;
             cur->m_state = TERM;
@@ -242,7 +257,9 @@ namespace fatdog
 
         auto raw_ptr = cur.get();
         cur.reset();
-        // FATDOG_LOG_INFO(g_logger) << "Fiber::MainFunc bye: " << raw_ptr->getId();
+#ifdef FIBER_DEBUG
+        FATDOG_LOG_INFO(g_logger) << "Fiber::MainFunc bye: " << raw_ptr->getId();
+#endif
         raw_ptr->swapOut();
 
         FATDOG_ASSERT2(false, "never reach fiber_id=" + std::to_string(raw_ptr->getId()));
@@ -254,7 +271,9 @@ namespace fatdog
         FATDOG_ASSERT(cur);
         try
         {
-            // FATDOG_LOG_INFO(g_logger) << "Fiber::CallerMainFunc: " << cur->getId();
+#ifdef FIBER_DEBUG
+            FATDOG_LOG_INFO(g_logger) << "Fiber::CallerMainFunc: " << cur->getId();
+#endif
             cur->m_cb();
             cur->m_cb = nullptr;
             cur->m_state = TERM;
@@ -278,7 +297,9 @@ namespace fatdog
 
         auto raw_ptr = cur.get();
         cur.reset();
-        // FATDOG_LOG_INFO(g_logger) << "Fiber::CallerMainFunc bye: " << raw_ptr->getId();
+#ifdef FIBER_DEBUG
+        FATDOG_LOG_INFO(g_logger) << "Fiber::CallerMainFunc bye: " << raw_ptr->getId();
+#endif
         raw_ptr->back();
 
         FATDOG_ASSERT2(false, "never reach fiber_id=" + std::to_string(raw_ptr->getId()));

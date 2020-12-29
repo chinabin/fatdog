@@ -60,6 +60,7 @@ void test1() {
 fatdog::TimerManager::Timer::ptr s_timer;
 void test_timer() {
     fatdog::IOManager iom("lala", 1);
+    FATDOG_LOG_INFO(g_logger) << "add timer";
     s_timer = iom.addTimer(1000, [](){
         static int i = 0;
         FATDOG_LOG_INFO(g_logger) << "hello timer i=" << i;

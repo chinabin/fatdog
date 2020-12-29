@@ -12,9 +12,12 @@ static fatdog::Logger::ptr g_logger = FATDOG_LOG_ROOT();
 
 void run_in_fiber() {
     FATDOG_LOG_INFO(g_logger) << "run_in_fiber begin";
-    fatdog::Fiber::YieldToHold();
+    // fatdog::Fiber::YieldToHold();
+    fatdog::Fiber::GetThis()->back();
     FATDOG_LOG_INFO(g_logger) << "run_in_fiber end";
-    fatdog::Fiber::YieldToHold();
+    // fatdog::Fiber::YieldToHold();
+    fatdog::Fiber::GetThis()->back();
+    FATDOG_LOG_INFO(g_logger) << "hehehahaha";
 }
 
 void test_fiber() {
@@ -22,13 +25,16 @@ void test_fiber() {
     {
         fatdog::Fiber::GetThis();
         FATDOG_LOG_INFO(g_logger) << "main begin";
-        fatdog::Fiber::ptr fiber(new fatdog::Fiber(run_in_fiber, 1024 * 1024));
+        fatdog::Fiber::ptr fiber(new fatdog::Fiber(run_in_fiber, 1024 * 1024, true));
         FATDOG_LOG_INFO(g_logger) << "guagua";
-        fiber->swapIn();
+        // fiber->swapIn();
+        fiber->call();
         FATDOG_LOG_INFO(g_logger) << "main after swapIn";
-        fiber->swapIn();
+        // fiber->swapIn();
+        fiber->call();
         FATDOG_LOG_INFO(g_logger) << "main after end";
-        fiber->swapIn();
+        // fiber->swapIn();
+        fiber->call();
     }
     FATDOG_LOG_INFO(g_logger) << "main after end2";
 }
@@ -130,9 +136,9 @@ int main()
 {
     // test_backtrace();
     // test_ucontext1();
-     test_ucontext2();
+    // test_ucontext2();
 
-    // thread_run();
+    thread_run();
 
     return 0;
 }
